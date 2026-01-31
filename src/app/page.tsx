@@ -3,7 +3,104 @@
 import { motion, useScroll, useTransform, useSpring, useMotionValue, useAnimationFrame, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+
+// ═══════════════════════════════════════════════════════════════
+//                    HERO VIDEO BACKGROUND
+// ═══════════════════════════════════════════════════════════════
+
+function HeroVideoBackground() {
+  const { scrollY } = useScroll();
+  const opacity = useTransform(scrollY, [0, 600], [1, 0]);
+  const scale = useTransform(scrollY, [0, 600], [1, 1.2]);
+  const blur = useTransform(scrollY, [0, 300], [0, 10]);
+  
+  return (
+    <motion.div 
+      className="absolute inset-0 z-0 overflow-hidden"
+      style={{ opacity }}
+    >
+      {/* Video Container with Overlay */}
+      <motion.div 
+        className="absolute inset-0"
+        style={{ scale }}
+      >
+        {/* Animated Gradient Overlay for video effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-black/90 to-[#FF6B35]/20 z-10" />
+        
+        {/* Dynamic moving background simulating video */}
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(ellipse at 20% 50%, rgba(255,107,53,0.15) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.1) 0%, transparent 40%),
+              radial-gradient(ellipse at 60% 80%, rgba(16,185,129,0.1) 0%, transparent 45%),
+              linear-gradient(180deg, #0a0a0a 0%, #111111 100%)
+            `,
+          }}
+          animate={{
+            backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+        />
+        
+        {/* Animated light streaks like car headlights */}
+        {[...Array(8)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute h-[2px] rounded-full"
+            style={{
+              width: `${150 + Math.random() * 200}px`,
+              left: `${Math.random() * 100}%`,
+              top: `${20 + Math.random() * 60}%`,
+              background: `linear-gradient(90deg, transparent, ${i % 2 === 0 ? 'rgba(255,107,53,0.6)' : 'rgba(255,255,255,0.4)'}, transparent)`,
+              filter: 'blur(1px)',
+            }}
+            animate={{
+              x: ['-200%', '200%'],
+              opacity: [0, 1, 1, 0],
+            }}
+            transition={{
+              duration: 2 + Math.random() * 2,
+              repeat: Infinity,
+              delay: i * 0.5,
+              ease: 'easeInOut',
+            }}
+          />
+        ))}
+        
+        {/* Road/street effect at bottom */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-[200px]"
+          style={{
+            background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 50%, rgba(255,107,53,0.1) 100%)',
+          }}
+        />
+        
+        {/* Speedometer-like animated circles */}
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full border border-[#FF6B35]/10"
+          animate={{ rotate: 360, scale: [1, 1.1, 1] }}
+          transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-white/5"
+          animate={{ rotate: -360 }}
+          transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+        />
+      </motion.div>
+      
+      {/* Noise texture overlay */}
+      <div 
+        className="absolute inset-0 z-20 opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+        }}
+      />
+    </motion.div>
+  );
+}
 
 // ═══════════════════════════════════════════════════════════════
 //                    CRAZY BACKGROUND EFFECTS
@@ -126,44 +223,6 @@ function Floating3DShapes() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//                    SPEED LINES ON SCROLL
-// ═══════════════════════════════════════════════════════════════
-
-function SpeedLines() {
-  const { scrollY } = useScroll();
-  const opacity = useTransform(scrollY, [0, 100, 500], [0, 1, 0]);
-  
-  return (
-    <motion.div
-      className="fixed inset-0 pointer-events-none z-10 overflow-hidden"
-      style={{ opacity }}
-    >
-      {[...Array(20)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute h-[2px] bg-gradient-to-r from-transparent via-[#FF6B35]/50 to-transparent"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            width: `${100 + Math.random() * 200}px`,
-            rotate: `${-45 + Math.random() * 10}deg`,
-          }}
-          animate={{
-            x: [-200, 200],
-            opacity: [0, 1, 0],
-          }}
-          transition={{
-            duration: 0.5,
-            repeat: Infinity,
-            delay: i * 0.1,
-          }}
-        />
-      ))}
-    </motion.div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════
 //                    ANIMATED PARTICLES
 // ═══════════════════════════════════════════════════════════════
 
@@ -243,9 +302,6 @@ function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: strin
 function Navigation() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { scrollY } = useScroll();
-  const navY = useTransform(scrollY, [0, 100], [0, 0]);
-  const navBlur = useTransform(scrollY, [0, 100], [0, 20]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -269,16 +325,28 @@ function Navigation() {
         <div className="container mx-auto px-4 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
             <motion.div
-              className="relative h-10 w-48"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FF6B35] to-[#E55A25] flex items-center justify-center font-black text-white text-xl shadow-xl shadow-[#FF6B35]/40"
+              whileHover={{ scale: 1.1, rotate: 10, boxShadow: '0 0 40px rgba(255,107,53,0.6)' }}
+              whileTap={{ scale: 0.9 }}
+              animate={{ 
+                boxShadow: ['0 0 20px rgba(255,107,53,0.3)', '0 0 40px rgba(255,107,53,0.5)', '0 0 20px rgba(255,107,53,0.3)']
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
             >
-              <Image src="/assets/logo.webp" alt="Fahrwerk Münster" fill className="object-contain" priority />
+              FW
             </motion.div>
+            <div className="hidden sm:block">
+              <motion.div className="font-black text-white text-xl tracking-tight">
+                FAHRWERK
+              </motion.div>
+              <motion.div className="text-sm text-[#FF6B35] font-medium">
+                Münster
+              </motion.div>
+            </div>
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
-            {['Kurse', 'Klassen', 'Team', 'FAQ', 'Kontakt'].map((item, i) => (
+            {['Kurse', 'Fahrzeuge', 'Team', 'Bewertungen', 'FAQ', 'Kontakt'].map((item, i) => (
               <motion.div
                 key={item}
                 initial={{ opacity: 0, y: -20 }}
@@ -361,7 +429,7 @@ function Navigation() {
             transition={{ duration: 0.5 }}
           >
             <div className="flex flex-col gap-8">
-              {['Kurse', 'Klassen', 'Team', 'FAQ', 'Kontakt'].map((item, i) => (
+              {['Kurse', 'Fahrzeuge', 'Team', 'Bewertungen', 'FAQ', 'Kontakt'].map((item, i) => (
                 <motion.div
                   key={item}
                   initial={{ opacity: 0, x: -50, rotate: -5 }}
@@ -386,7 +454,7 @@ function Navigation() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//                    HERO SECTION
+//                    HERO SECTION WITH VIDEO BG
 // ═══════════════════════════════════════════════════════════════
 
 function HeroSection() {
@@ -399,6 +467,9 @@ function HeroSection() {
 
   return (
     <section ref={ref} className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+      {/* Video/Image Background */}
+      <HeroVideoBackground />
+      
       <motion.div
         className="container mx-auto px-4 relative z-10"
         style={{ opacity, scale, rotateX, transformPerspective: 1000 }}
@@ -664,7 +735,7 @@ function HeroSection() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//                    KURSE SECTION WITH SCROLL EFFECTS
+//                    KURSE SECTION WITH EXTREME 3D
 // ═══════════════════════════════════════════════════════════════
 
 function KurseSection() {
@@ -672,12 +743,21 @@ function KurseSection() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
   const rotate = useTransform(scrollYProgress, [0, 1], [-5, 5]);
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
   const kurse = [
     { title: 'Klassisch', duration: '3-6 Monate', icon: '📚', color: '#10B981', features: ['Flexibles Lerntempo', 'Persönliche Betreuung', 'Easy Ausbildung', 'Keine Eile'], popular: false },
     { title: 'Intensiv', duration: '4-6 Wochen', icon: '🚀', color: '#FF6B35', features: ['Theorie + Praxis verzahnt', 'Hoher Lerneffekt', 'Bevorzugte Antragstellung', 'Schneller fertig'], popular: true },
     { title: 'Express', duration: '10 Tage', icon: '⚡', color: '#8B5CF6', features: ['Maximale Geschwindigkeit', 'Sofortige Prüfungen', 'Bevorzugte Antragstellung', 'Rekordzeit'], popular: false },
   ];
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set(e.clientX - rect.left - rect.width / 2);
+    mouseY.set(e.clientY - rect.top - rect.height / 2);
+  }, [mouseX, mouseY]);
 
   return (
     <section id="kurse" ref={ref} className="py-40 relative overflow-hidden">
@@ -719,7 +799,7 @@ function KurseSection() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto perspective-1000">
           {kurse.map((kurs, i) => (
             <motion.div
               key={i}
@@ -728,6 +808,10 @@ function KurseSection() {
               whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.2, type: 'spring' }}
+              onMouseEnter={() => setHoveredCard(i)}
+              onMouseLeave={() => setHoveredCard(null)}
+              onMouseMove={handleMouseMove}
+              style={{ transformStyle: 'preserve-3d' }}
             >
               <motion.div
                 className={`relative p-10 rounded-[2rem] border overflow-hidden h-full ${
@@ -735,20 +819,57 @@ function KurseSection() {
                     ? 'bg-gradient-to-b from-[#FF6B35]/20 to-transparent border-[#FF6B35]/50'
                     : 'bg-white/5 border-white/10'
                 }`}
-                whileHover={{ y: -20, scale: 1.02, rotateY: 5 }}
+                animate={{
+                  rotateX: hoveredCard === i ? -5 : 0,
+                  rotateY: hoveredCard === i ? 10 : 0,
+                  z: hoveredCard === i ? 50 : 0,
+                }}
+                whileHover={{ 
+                  y: -20, 
+                  scale: 1.05,
+                  boxShadow: `0 50px 100px -20px ${kurs.color}40, 0 0 40px ${kurs.color}20`,
+                }}
                 transition={{ type: 'spring', stiffness: 300 }}
                 style={{ transformStyle: 'preserve-3d' }}
               >
-                {/* Animated shine */}
+                {/* Holographic shine effect */}
                 <motion.div
                   className="absolute inset-0 opacity-0 group-hover:opacity-100"
                   style={{
-                    background: 'linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%)',
+                    background: `linear-gradient(
+                      105deg, 
+                      transparent 40%, 
+                      rgba(255,255,255,0.1) 45%, 
+                      rgba(255,255,255,0.2) 50%, 
+                      rgba(255,255,255,0.1) 55%, 
+                      transparent 60%
+                    )`,
                     backgroundSize: '200% 200%',
                   }}
-                  animate={{ backgroundPosition: ['0% 0%', '200% 200%'] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+                  animate={{ backgroundPosition: ['200% 200%', '-100% -100%'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 1 }}
                 />
+
+                {/* 3D Floating particles on hover */}
+                {hoveredCard === i && [...Array(8)].map((_, j) => (
+                  <motion.div
+                    key={j}
+                    className="absolute w-2 h-2 rounded-full"
+                    style={{
+                      background: kurs.color,
+                      left: `${20 + Math.random() * 60}%`,
+                      top: `${20 + Math.random() * 60}%`,
+                    }}
+                    initial={{ opacity: 0, scale: 0, z: 0 }}
+                    animate={{ 
+                      opacity: [0, 1, 0], 
+                      scale: [0, 1.5, 0],
+                      y: [0, -50],
+                      z: [0, 100, 0],
+                    }}
+                    transition={{ duration: 1.5, delay: j * 0.1, repeat: Infinity }}
+                  />
+                ))}
 
                 {kurs.popular && (
                   <motion.div
@@ -757,32 +878,56 @@ function KurseSection() {
                     whileInView={{ scale: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.5, type: 'spring', bounce: 0.5 }}
-                    animate={{ scale: [1, 1.05, 1] }}
+                    animate={{ 
+                      scale: [1, 1.05, 1],
+                      boxShadow: ['0 10px 40px rgba(255,107,53,0.3)', '0 20px 60px rgba(255,107,53,0.5)', '0 10px 40px rgba(255,107,53,0.3)']
+                    }}
+                    style={{ transform: 'translateZ(60px)' }}
                   >
                     🔥 BELIEBT
                   </motion.div>
                 )}
 
                 <motion.div
-                  className="w-24 h-24 rounded-3xl flex items-center justify-center text-6xl mb-10"
-                  style={{ background: `${kurs.color}20` }}
-                  whileHover={{ rotate: [0, -20, 20, 0], scale: 1.2 }}
+                  className="w-24 h-24 rounded-3xl flex items-center justify-center text-6xl mb-10 relative"
+                  style={{ 
+                    background: `${kurs.color}20`,
+                    transform: 'translateZ(40px)',
+                    boxShadow: `0 20px 40px ${kurs.color}30`,
+                  }}
+                  whileHover={{ 
+                    rotate: [0, -20, 20, -10, 0], 
+                    scale: 1.2,
+                  }}
                   transition={{ duration: 0.6 }}
                 >
-                  {kurs.icon}
+                  <motion.span
+                    animate={{ 
+                      y: [0, -5, 0],
+                      rotateZ: hoveredCard === i ? [0, 10, -10, 0] : 0,
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    {kurs.icon}
+                  </motion.span>
                 </motion.div>
 
-                <h3 className="text-3xl font-black text-white mb-4">{kurs.title}</h3>
+                <h3 
+                  className="text-3xl font-black text-white mb-4"
+                  style={{ transform: 'translateZ(30px)' }}
+                >
+                  {kurs.title}
+                </h3>
                 <motion.div
                   className="text-5xl font-black mb-10"
-                  style={{ color: kurs.color }}
+                  style={{ color: kurs.color, transform: 'translateZ(25px)' }}
                   animate={{ scale: [1, 1.02, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
                   {kurs.duration}
                 </motion.div>
 
-                <ul className="space-y-5 mb-10">
+                <ul className="space-y-5 mb-10" style={{ transform: 'translateZ(20px)' }}>
                   {kurs.features.map((feature, j) => (
                     <motion.li
                       key={j}
@@ -804,7 +949,11 @@ function KurseSection() {
                   ))}
                 </ul>
 
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <motion.div 
+                  whileHover={{ scale: 1.05 }} 
+                  whileTap={{ scale: 0.95 }}
+                  style={{ transform: 'translateZ(35px)' }}
+                >
                   <Link
                     href="#kontakt"
                     className={`block text-center py-5 rounded-2xl font-black text-lg transition-all ${
@@ -826,120 +975,260 @@ function KurseSection() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//                    KLASSEN SECTION (mit echten SVGs)
+//                    FAHRZEUGE / VEHICLES SECTION
 // ═══════════════════════════════════════════════════════════════
 
-function KlassenSection() {
-  const klassen = [
-    { name: 'PKW', klasse: 'Klasse B / B197', icon: '/assets/classes/pkw.svg', desc: 'Der klassische Autoführerschein für alle PKW bis 3,5t', color: '#FF6B35' },
-    { name: 'Motorrad', klasse: 'Klasse A', icon: '/assets/classes/motorrad.svg', desc: 'Für alle Motorräder ohne Leistungsbegrenzung', color: '#8B5CF6' },
-    { name: 'Anhänger', klasse: 'Klasse BE', icon: '/assets/classes/anhaenger.svg', desc: 'PKW mit Anhänger über 750 kg', color: '#10B981' },
+function FahrzeugeSection() {
+  const [activeVehicle, setActiveVehicle] = useState(0);
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start end', 'end start'] });
+  const x = useTransform(scrollYProgress, [0, 1], ['-10%', '10%']);
+
+  const vehicles = [
+    {
+      name: 'VW Golf 8',
+      type: 'Schaltung & Automatik',
+      image: '🚗',
+      color: '#FF6B35',
+      features: ['Modernste Technik', 'Assistenzsysteme', 'Perfekt für Anfänger'],
+      description: 'Der beliebte Klassiker - ideal für den Führerschein mit seinem übersichtlichen Handling und moderner Ausstattung.',
+    },
+    {
+      name: 'VW Polo',
+      type: 'Schaltung',
+      image: '🚙',
+      color: '#10B981',
+      features: ['Kompakt & wendig', 'Sparsam', 'City-freundlich'],
+      description: 'Perfekt für das Stadtgebiet - kompakt, wendig und ideal zum Einparken üben!',
+    },
+    {
+      name: 'Anhänger-Kombination',
+      type: 'BE-Ausbildung',
+      image: '🚐',
+      color: '#8B5CF6',
+      features: ['Professionell', 'Große Anhänger', 'Sicher trainieren'],
+      description: 'Für den BE-Führerschein mit professioneller Anhänger-Kombination zum sicheren Rangieren.',
+    },
+    {
+      name: 'Motorrad',
+      type: 'Klasse A',
+      image: '🏍️',
+      color: '#F59E0B',
+      features: ['Honda CB500F', 'Sicher lernen', 'Schutzausrüstung inklusive'],
+      description: 'Für alle Zweirad-Fans - sichere Ausbildung auf modernen Maschinen mit kompletter Ausrüstung.',
+    },
   ];
 
   return (
-    <section id="klassen" className="py-32 relative">
-      <div className="container mx-auto px-4">
-        <motion.div className="text-center mb-20" initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <motion.span className="inline-block px-6 py-3 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-bold mb-8">
-            🚗 Führerscheinklassen
+    <section id="fahrzeuge" ref={containerRef} className="py-40 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div 
+          className="absolute top-1/4 -left-1/4 w-[600px] h-[600px] rounded-full bg-[#FF6B35]/5 blur-[120px]"
+          style={{ x }}
+        />
+        <motion.div 
+          className="absolute bottom-1/4 -right-1/4 w-[500px] h-[500px] rounded-full bg-purple-500/5 blur-[100px]"
+          style={{ x: useTransform(x, v => `${-parseFloat(v as string)}%`) }}
+        />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
+        <motion.div
+          className="text-center mb-20"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <motion.span
+            className="inline-block px-6 py-3 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-bold mb-8"
+            animate={{ 
+              boxShadow: ['0 0 20px rgba(255,107,53,0)', '0 0 40px rgba(255,107,53,0.3)', '0 0 20px rgba(255,107,53,0)']
+            }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            🚗 Unsere Flotte
           </motion.span>
-          <h2 className="text-5xl sm:text-6xl font-black text-white mb-8">
-            Welche <span className="text-[#FF6B35]">Klasse</span> brauchst du?
+          <h2 className="text-5xl sm:text-6xl font-black text-white mb-6">
+            Unsere <span className="text-[#FF6B35]">Fahrzeuge</span>
           </h2>
+          <p className="text-xl text-white/60 max-w-2xl mx-auto">
+            Moderne Fahrzeuge mit neuester Technik für deine sichere Ausbildung!
+          </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
-          {klassen.map((k, i) => (
-            <motion.div
-              key={i}
-              className="group relative p-10 rounded-[2rem] bg-white/5 border border-white/10 overflow-hidden text-center"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.15 }}
-              whileHover={{ y: -15, scale: 1.03, borderColor: `${k.color}50` }}
-            >
-              <motion.div
-                className="relative w-32 h-32 mx-auto mb-8"
-                whileHover={{ scale: 1.15, rotate: 5 }}
-              >
-                <Image src={k.icon} alt={k.name} fill className="object-contain filter brightness-0 invert opacity-90" />
-              </motion.div>
-              <h3 className="text-3xl font-black text-white mb-2">{k.name}</h3>
-              <motion.p className="text-xl font-bold mb-4" style={{ color: k.color }}>{k.klasse}</motion.p>
-              <p className="text-white/60">{k.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════
-//                    APP SECTION (mit echtem Bild)
-// ═══════════════════════════════════════════════════════════════
-
-function AppSection() {
-  return (
-    <section className="py-32 relative overflow-hidden">
-      <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
+          {/* Vehicle Showcase */}
           <motion.div
+            className="relative"
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <motion.span className="inline-block px-6 py-3 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-bold mb-8">
-              📱 drive.buzz App
-            </motion.span>
-            <h2 className="text-5xl sm:text-6xl font-black text-white mb-8">
-              Lerne <span className="text-[#FF6B35]">digital</span> & flexibel
-            </h2>
-            <p className="text-xl text-white/60 mb-8 leading-relaxed">
-              Die drive.buzz App ermöglicht dir individuelles, flexibles und ortsunabhängiges Lernen – 
-              perfekt abgestimmt auf deine Fahrausbildung.
-            </p>
-            <ul className="space-y-4 mb-10">
-              {['Intelligente Lernfunktionen', 'Realistische Prüfungssimulationen', 'Termine & Kosten im Überblick', 'Jederzeit & überall verfügbar'].map((item, i) => (
-                <motion.li
-                  key={i}
-                  className="flex items-center gap-4 text-white/80 text-lg"
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                >
-                  <span className="w-8 h-8 rounded-full bg-[#FF6B35]/20 flex items-center justify-center text-[#FF6B35]">✓</span>
-                  {item}
-                </motion.li>
-              ))}
-            </ul>
-          </motion.div>
-          
-          <motion.div
-            className="relative"
-            initial={{ opacity: 0, x: 50, rotateY: -20 }}
-            whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
-            viewport={{ once: true }}
-            transition={{ type: 'spring' }}
-          >
-            <motion.div
-              className="relative w-full max-w-md mx-auto"
-              whileHover={{ scale: 1.05, rotateY: 10 }}
-              transition={{ type: 'spring' }}
-            >
-              <div className="relative aspect-square rounded-[3rem] overflow-hidden shadow-2xl shadow-[#FF6B35]/30">
-                <Image src="/assets/app-phone.webp" alt="drive.buzz Fahrschul App" fill className="object-cover" />
-              </div>
+            <AnimatePresence mode="wait">
               <motion.div
-                className="absolute -bottom-6 -right-6 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-400 rounded-2xl text-base font-black text-white shadow-xl"
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
+                key={activeVehicle}
+                className="relative aspect-[4/3] rounded-[3rem] overflow-hidden"
+                initial={{ opacity: 0, scale: 0.9, rotateY: -20 }}
+                animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                exit={{ opacity: 0, scale: 0.9, rotateY: 20 }}
+                transition={{ duration: 0.5, type: 'spring' }}
+                style={{ 
+                  background: `linear-gradient(135deg, ${vehicles[activeVehicle].color}20 0%, transparent 50%, ${vehicles[activeVehicle].color}10 100%)`,
+                  border: `2px solid ${vehicles[activeVehicle].color}30`,
+                }}
               >
-                📲 Kostenlos
+                {/* Big emoji as placeholder for actual car images */}
+                <motion.div
+                  className="absolute inset-0 flex items-center justify-center text-[200px]"
+                  animate={{ 
+                    y: [0, -10, 0],
+                    rotateZ: [0, 2, -2, 0],
+                  }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                >
+                  {vehicles[activeVehicle].image}
+                </motion.div>
+
+                {/* Animated glow */}
+                <motion.div
+                  className="absolute inset-0"
+                  style={{
+                    background: `radial-gradient(circle at 50% 100%, ${vehicles[activeVehicle].color}40 0%, transparent 60%)`,
+                  }}
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+
+                {/* Speed lines */}
+                {[...Array(5)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute h-[2px] rounded-full"
+                    style={{
+                      width: `${80 + Math.random() * 60}px`,
+                      left: '-100px',
+                      top: `${30 + i * 15}%`,
+                      background: `linear-gradient(90deg, transparent, ${vehicles[activeVehicle].color}, transparent)`,
+                    }}
+                    animate={{ x: ['0%', '500%'], opacity: [0, 1, 0] }}
+                    transition={{ 
+                      duration: 1.5, 
+                      repeat: Infinity, 
+                      delay: i * 0.2,
+                      ease: 'easeOut',
+                    }}
+                  />
+                ))}
+
+                {/* Vehicle info overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
+                  <motion.h3 
+                    className="text-3xl font-black text-white mb-2"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    {vehicles[activeVehicle].name}
+                  </motion.h3>
+                  <motion.p 
+                    className="text-lg"
+                    style={{ color: vehicles[activeVehicle].color }}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    {vehicles[activeVehicle].type}
+                  </motion.p>
+                </div>
               </motion.div>
-            </motion.div>
+            </AnimatePresence>
+
+            {/* Navigation dots */}
+            <div className="flex justify-center gap-3 mt-8">
+              {vehicles.map((v, i) => (
+                <motion.button
+                  key={i}
+                  className={`w-3 h-3 rounded-full transition-all ${activeVehicle === i ? 'w-10' : ''}`}
+                  style={{ 
+                    background: activeVehicle === i ? v.color : 'rgba(255,255,255,0.2)',
+                    boxShadow: activeVehicle === i ? `0 0 20px ${v.color}` : 'none',
+                  }}
+                  onClick={() => setActiveVehicle(i)}
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.9 }}
+                />
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Vehicle Details */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeVehicle}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <p className="text-xl text-white/70 mb-10 leading-relaxed">
+                  {vehicles[activeVehicle].description}
+                </p>
+
+                <div className="space-y-4 mb-10">
+                  {vehicles[activeVehicle].features.map((feature, i) => (
+                    <motion.div
+                      key={i}
+                      className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      whileHover={{ 
+                        scale: 1.02, 
+                        borderColor: vehicles[activeVehicle].color,
+                        background: `${vehicles[activeVehicle].color}10`,
+                      }}
+                    >
+                      <motion.span
+                        className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+                        style={{ background: `${vehicles[activeVehicle].color}20` }}
+                        whileHover={{ rotate: 360 }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        ✓
+                      </motion.span>
+                      <span className="text-white text-lg font-medium">{feature}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Vehicle selector buttons */}
+            <div className="grid grid-cols-2 gap-4">
+              {vehicles.map((v, i) => (
+                <motion.button
+                  key={i}
+                  className={`p-4 rounded-2xl border text-left transition-all ${
+                    activeVehicle === i 
+                      ? 'border-[#FF6B35]/50 bg-[#FF6B35]/10' 
+                      : 'border-white/10 bg-white/5 hover:bg-white/10'
+                  }`}
+                  onClick={() => setActiveVehicle(i)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span className="text-2xl mb-2 block">{v.image}</span>
+                  <span className="text-white font-bold block">{v.name}</span>
+                  <span className="text-white/50 text-sm">{v.type}</span>
+                </motion.button>
+              ))}
+            </div>
           </motion.div>
         </div>
       </div>
@@ -948,16 +1237,68 @@ function AppSection() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//                    TEAM SECTION
+//                    TEAM SECTION WITH MODALS
 // ═══════════════════════════════════════════════════════════════
 
 function TeamSection() {
+  const [selectedMember, setSelectedMember] = useState<number | null>(null);
+  
   const team = [
-    { name: 'Schero', role: 'Inhaber & Fahrlehrer', image: '/assets/team/schero.webp', hoverImage: '/assets/team/schero-hover.webp', klassen: 'B / BE', sprachen: 'DE, EN, KU', emoji: '⚽' },
-    { name: 'Nils', role: 'Fahrlehrer', image: '/assets/team/nils.webp', hoverImage: '/assets/team/nils-hover.webp', klassen: 'B / BE', sprachen: 'DE', emoji: '🎖️' },
-    { name: 'Alan', role: 'Fahrlehrer', image: '/assets/team/alan.webp', hoverImage: '/assets/team/alan-hover.webp', klassen: 'B / BE', sprachen: 'DE, EN, KU', emoji: '😄' },
-    { name: 'Saad', role: 'Fahrlehrer', image: '/assets/team/saad.webp', hoverImage: '/assets/team/saad-hover.webp', klassen: 'B / BE', sprachen: 'DE, EN', emoji: '🧘' },
-    { name: 'Idris', role: 'Fahrlehrer', image: '/assets/team/idris.webp', hoverImage: '/assets/team/idris-hover.webp', klassen: 'B / BE', sprachen: 'DE, AF', emoji: '💪' },
+    { 
+      name: 'Schero', 
+      role: 'Inhaber & Fahrlehrer', 
+      image: '/assets/team/schero.webp', 
+      klassen: 'B / BE', 
+      sprachen: 'DE, EN, KU', 
+      emoji: '⚽',
+      bio: 'Als Gründer von FAHRWERK Münster bringe ich über 10 Jahre Erfahrung mit. Meine Mission: Jeden Fahrschüler sicher und entspannt zum Führerschein bringen!',
+      funFact: 'Größter Fußball-Fan und FC Barcelona Supporter 🔵🔴',
+      motto: '"Gemeinsam schaffen wir das!"',
+    },
+    { 
+      name: 'Nils', 
+      role: 'Fahrlehrer', 
+      image: '/assets/team/nils.webp', 
+      klassen: 'B / BE', 
+      sprachen: 'DE', 
+      emoji: '🎖️',
+      bio: 'Mit meiner ruhigen Art helfe ich auch nervösen Fahrschülern, entspannt durch die Prüfung zu kommen.',
+      funFact: 'Ehemaliger Bundeswehr-Fahrer mit Erfahrung auf allen Geländen 🪖',
+      motto: '"Ruhe bewahren, sicher fahren!"',
+    },
+    { 
+      name: 'Alan', 
+      role: 'Fahrlehrer', 
+      image: '/assets/team/alan.webp', 
+      klassen: 'B / BE', 
+      sprachen: 'DE, EN, KU', 
+      emoji: '😄',
+      bio: 'Ich sorge dafür, dass jede Fahrstunde Spaß macht! Mit Humor und Geduld zum Erfolg.',
+      funFact: 'Bekannt für die besten Witze während der Fahrstunden 😂',
+      motto: '"Lachen entspannt - auch beim Fahren!"',
+    },
+    { 
+      name: 'Saad', 
+      role: 'Fahrlehrer', 
+      image: '/assets/team/saad.webp', 
+      klassen: 'B / BE', 
+      sprachen: 'DE, EN', 
+      emoji: '🧘',
+      bio: 'Mein Ansatz: Entspannt bleiben, fokussiert fahren. Ich helfe dir, Ruhe zu bewahren.',
+      funFact: 'Praktiziert Yoga und bringt diese Ruhe in jede Fahrstunde 🧘',
+      motto: '"Atmen, fokussieren, losfahren!"',
+    },
+    { 
+      name: 'Idris', 
+      role: 'Fahrlehrer', 
+      image: '/assets/team/idris.webp', 
+      klassen: 'B / BE', 
+      sprachen: 'DE, AF', 
+      emoji: '💪',
+      bio: 'Motivation ist alles! Ich pushe jeden Fahrschüler zur Bestleistung.',
+      funFact: 'Fitness-Enthusiast der selbst beim Fahren fit bleibt 💪',
+      motto: '"Du kannst alles schaffen!"',
+    },
   ];
 
   return (
@@ -969,56 +1310,494 @@ function TeamSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <motion.span className="inline-block px-6 py-3 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-bold mb-8">
+          <motion.span 
+            className="inline-block px-6 py-3 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-bold mb-8"
+            animate={{ 
+              boxShadow: ['0 0 20px rgba(255,107,53,0)', '0 0 40px rgba(255,107,53,0.3)', '0 0 20px rgba(255,107,53,0)']
+            }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
             👨‍🏫 Mit uns zum Führerschein!
           </motion.span>
           <h2 className="text-5xl sm:text-6xl font-black text-white mb-8">
             Das <span className="text-[#FF6B35]">FAHRWERK</span> Team
           </h2>
+          <p className="text-xl text-white/60 max-w-2xl mx-auto">
+            Klick auf einen Fahrlehrer um mehr zu erfahren!
+          </p>
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
           {team.map((member, i) => (
             <motion.div
               key={i}
-              className="group"
+              className="group cursor-pointer"
               initial={{ opacity: 0, y: 50, rotateY: -20 }}
               whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1, type: 'spring' }}
+              onClick={() => setSelectedMember(i)}
             >
               <motion.div
                 className="relative p-6 rounded-[2rem] bg-gradient-to-b from-white/10 to-white/[0.02] border border-white/10 overflow-hidden"
-                whileHover={{ y: -15, scale: 1.05, rotateY: 10 }}
+                whileHover={{ 
+                  y: -15, 
+                  scale: 1.05, 
+                  rotateY: 10,
+                  borderColor: 'rgba(255,107,53,0.5)',
+                  boxShadow: '0 30px 60px -15px rgba(255,107,53,0.3)',
+                }}
                 transition={{ type: 'spring' }}
                 style={{ transformStyle: 'preserve-3d' }}
               >
+                {/* Glowing border on hover */}
+                <motion.div
+                  className="absolute inset-0 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{
+                    background: 'linear-gradient(45deg, rgba(255,107,53,0.3), transparent, rgba(255,107,53,0.3))',
+                    backgroundSize: '200% 200%',
+                  }}
+                  animate={{ backgroundPosition: ['0% 0%', '200% 200%'] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+
                 <motion.div
                   className="absolute top-4 right-4 w-12 h-12 rounded-full bg-[#FF6B35]/20 flex items-center justify-center text-2xl z-10"
                   whileHover={{ scale: 1.3, rotate: 30 }}
+                  animate={{ 
+                    y: [0, -5, 0],
+                    rotate: [0, 5, -5, 0],
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
                 >
                   {member.emoji}
                 </motion.div>
 
                 <div className="relative w-full aspect-square rounded-2xl overflow-hidden mb-6 bg-gradient-to-br from-[#FF6B35]/20 to-purple-500/20">
-                  <Image src={member.image} alt={member.name} fill className="object-cover transition-all duration-500 group-hover:opacity-0" />
-                  <Image src={member.hoverImage} alt={`${member.name} hover`} fill className="object-cover absolute inset-0 opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-110" />
+                  <Image src={member.image} alt={member.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                  
+                  {/* Shine effect */}
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100"
+                    style={{
+                      background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%)',
+                      backgroundSize: '200% 200%',
+                    }}
+                    animate={{ backgroundPosition: ['200% 0%', '-100% 0%'] }}
+                    transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
                   />
+
+                  {/* "Click for more" overlay */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-t from-[#FF6B35]/80 to-transparent flex items-end justify-center pb-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <span className="text-white font-bold text-sm">
+                      Mehr erfahren →
+                    </span>
+                  </motion.div>
                 </div>
 
                 <h3 className="font-black text-white text-2xl mb-2">{member.name}</h3>
                 <p className="text-[#FF6B35] font-semibold mb-4">{member.role}</p>
                 
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1.5 rounded-full bg-white/5 text-xs text-white/60">📋 {member.klassen}</span>
-                  <span className="px-3 py-1.5 rounded-full bg-white/5 text-xs text-white/60">🗣️ {member.sprachen}</span>
+                  <motion.span 
+                    className="px-3 py-1.5 rounded-full bg-white/5 text-xs text-white/60"
+                    whileHover={{ scale: 1.1, background: 'rgba(255,107,53,0.2)' }}
+                  >
+                    📋 {member.klassen}
+                  </motion.span>
+                  <motion.span 
+                    className="px-3 py-1.5 rounded-full bg-white/5 text-xs text-white/60"
+                    whileHover={{ scale: 1.1, background: 'rgba(255,107,53,0.2)' }}
+                  >
+                    🗣️ {member.sprachen}
+                  </motion.span>
                 </div>
               </motion.div>
             </motion.div>
           ))}
         </div>
+      </div>
+
+      {/* Team Member Modal */}
+      <AnimatePresence>
+        {selectedMember !== null && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedMember(null)}
+          >
+            {/* Backdrop */}
+            <motion.div 
+              className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+
+            {/* Modal Content */}
+            <motion.div
+              className="relative bg-gradient-to-br from-gray-900 to-black border border-white/20 rounded-[3rem] p-8 md:p-12 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              initial={{ scale: 0.5, rotateY: -30, opacity: 0 }}
+              animate={{ scale: 1, rotateY: 0, opacity: 1 }}
+              exit={{ scale: 0.5, rotateY: 30, opacity: 0 }}
+              transition={{ type: 'spring', bounce: 0.3 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <motion.button
+                className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white text-2xl hover:bg-[#FF6B35]/50 transition-colors"
+                onClick={() => setSelectedMember(null)}
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                ✕
+              </motion.button>
+
+              <div className="flex flex-col md:flex-row gap-8">
+                {/* Image */}
+                <motion.div 
+                  className="relative w-40 h-40 md:w-48 md:h-48 rounded-3xl overflow-hidden flex-shrink-0 mx-auto md:mx-0"
+                  initial={{ scale: 0, rotate: -20 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: 0.2, type: 'spring' }}
+                >
+                  <Image 
+                    src={team[selectedMember].image} 
+                    alt={team[selectedMember].name} 
+                    fill 
+                    className="object-cover" 
+                  />
+                  <motion.div
+                    className="absolute -bottom-2 -right-2 w-16 h-16 rounded-full bg-[#FF6B35] flex items-center justify-center text-3xl"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.4, type: 'spring', bounce: 0.5 }}
+                  >
+                    {team[selectedMember].emoji}
+                  </motion.div>
+                </motion.div>
+
+                {/* Info */}
+                <div className="flex-1 text-center md:text-left">
+                  <motion.h3 
+                    className="text-4xl font-black text-white mb-2"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    {team[selectedMember].name}
+                  </motion.h3>
+                  <motion.p 
+                    className="text-[#FF6B35] text-xl font-semibold mb-6"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.35 }}
+                  >
+                    {team[selectedMember].role}
+                  </motion.p>
+
+                  <motion.p 
+                    className="text-white/70 text-lg mb-6 leading-relaxed"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    {team[selectedMember].bio}
+                  </motion.p>
+
+                  <motion.div
+                    className="p-4 rounded-2xl bg-[#FF6B35]/10 border border-[#FF6B35]/30 mb-6"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.45 }}
+                  >
+                    <p className="text-[#FF6B35] font-bold mb-1">Fun Fact:</p>
+                    <p className="text-white/80">{team[selectedMember].funFact}</p>
+                  </motion.div>
+
+                  <motion.p
+                    className="text-2xl font-bold text-white/60 italic"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    {team[selectedMember].motto}
+                  </motion.p>
+                </div>
+              </div>
+
+              {/* Skills/Tags */}
+              <motion.div 
+                className="flex flex-wrap gap-3 mt-8 justify-center md:justify-start"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.55 }}
+              >
+                <span className="px-4 py-2 rounded-full bg-white/10 text-white">
+                  📋 Klassen: {team[selectedMember].klassen}
+                </span>
+                <span className="px-4 py-2 rounded-full bg-white/10 text-white">
+                  🗣️ Sprachen: {team[selectedMember].sprachen}
+                </span>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+//                    TESTIMONIALS / BEWERTUNGEN SECTION
+// ═══════════════════════════════════════════════════════════════
+
+function TestimonialsSection() {
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const testimonials = [
+    {
+      name: 'Lisa M.',
+      age: 18,
+      course: 'Intensiv-Kurs',
+      rating: 5,
+      text: 'Dank FAHRWERK habe ich meinen Führerschein in nur 5 Wochen geschafft! Das Team ist super motiviert und hat mir alle Ängste genommen. Kann ich nur weiterempfehlen! 🎉',
+      avatar: '👩‍🎓',
+      date: 'Januar 2025',
+    },
+    {
+      name: 'Murat K.',
+      age: 24,
+      course: 'Express 10 Tage',
+      rating: 5,
+      text: 'Ich brauchte meinen Führerschein schnell für den Job. In 10 Tagen war alles erledigt! Professionell, freundlich und mega effizient. Danke Schero & Team! 💪',
+      avatar: '👨‍💼',
+      date: 'Dezember 2024',
+    },
+    {
+      name: 'Sophie L.',
+      age: 17,
+      course: 'BF17',
+      rating: 5,
+      text: 'Mit 17 schon Auto fahren - dank FAHRWERK war das kein Problem! Die Fahrlehrer sind geduldig und erklären alles super verständlich. Bestanden beim ersten Versuch! ⭐',
+      avatar: '👧',
+      date: 'November 2024',
+    },
+    {
+      name: 'Tobias R.',
+      age: 35,
+      course: 'Klassisch',
+      rating: 5,
+      text: 'Als später Führerschein-Anfänger hatte ich Bedenken, aber das Team hat mich super aufgenommen. Kein Druck, eigenes Tempo - perfekt! Nach 4 Monaten hatte ich den Lappen.',
+      avatar: '👨‍🦰',
+      date: 'Oktober 2024',
+    },
+    {
+      name: 'Ayla S.',
+      age: 22,
+      course: 'BE-Anhänger',
+      rating: 5,
+      text: 'Für den BE-Führerschein war FAHRWERK die beste Wahl! Moderne Fahrzeuge und top Ausbildung. Jetzt kann ich endlich den Pferde-Anhänger selbst fahren! 🐴',
+      avatar: '👩‍🔬',
+      date: 'September 2024',
+    },
+  ];
+
+  // Auto-rotate testimonials
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [testimonials.length]);
+
+  return (
+    <section id="bewertungen" ref={containerRef} className="py-40 relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div
+          className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-yellow-500/5 blur-[150px]"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
+        <motion.div
+          className="text-center mb-20"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <motion.span
+            className="inline-block px-6 py-3 rounded-full bg-yellow-500/10 text-yellow-400 text-sm font-bold mb-8"
+            animate={{ 
+              boxShadow: ['0 0 20px rgba(234,179,8,0)', '0 0 40px rgba(234,179,8,0.3)', '0 0 20px rgba(234,179,8,0)']
+            }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            ⭐ Was unsere Fahrschüler sagen
+          </motion.span>
+          <h2 className="text-5xl sm:text-6xl font-black text-white mb-6">
+            <span className="text-yellow-400">5.0</span> Sterne auf Google
+          </h2>
+          <div className="flex justify-center gap-2 mb-6">
+            {[...Array(5)].map((_, i) => (
+              <motion.span
+                key={i}
+                className="text-4xl"
+                initial={{ opacity: 0, scale: 0 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 * i, type: 'spring', bounce: 0.5 }}
+                animate={{ 
+                  rotateZ: [0, 10, -10, 0],
+                  scale: [1, 1.2, 1],
+                }}
+                whileHover={{ scale: 1.5 }}
+              >
+                ⭐
+              </motion.span>
+            ))}
+          </div>
+          <p className="text-xl text-white/60 max-w-2xl mx-auto">
+            Über 200 zufriedene Fahrschüler können nicht irren!
+          </p>
+        </motion.div>
+
+        {/* Main Testimonial Display */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTestimonial}
+              className="relative p-10 md:p-14 rounded-[3rem] bg-gradient-to-br from-white/10 to-white/[0.02] border border-white/20 backdrop-blur-sm"
+              initial={{ opacity: 0, y: 50, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -50, scale: 0.95 }}
+              transition={{ duration: 0.5 }}
+            >
+              {/* Quote marks */}
+              <motion.div
+                className="absolute -top-6 -left-2 text-[120px] text-[#FF6B35]/20 font-serif leading-none"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                "
+              </motion.div>
+
+              {/* Stars */}
+              <div className="flex gap-1 mb-6">
+                {[...Array(testimonials[activeTestimonial].rating)].map((_, i) => (
+                  <motion.span
+                    key={i}
+                    className="text-2xl text-yellow-400"
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.1 + i * 0.05 }}
+                  >
+                    ⭐
+                  </motion.span>
+                ))}
+              </div>
+
+              {/* Quote text */}
+              <motion.p
+                className="text-2xl md:text-3xl text-white font-medium leading-relaxed mb-10"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                {testimonials[activeTestimonial].text}
+              </motion.p>
+
+              {/* Author info */}
+              <div className="flex items-center gap-6">
+                <motion.div
+                  className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FF6B35]/30 to-purple-500/30 flex items-center justify-center text-4xl"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.3, type: 'spring' }}
+                >
+                  {testimonials[activeTestimonial].avatar}
+                </motion.div>
+                <div>
+                  <motion.h4
+                    className="text-xl font-bold text-white"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.35 }}
+                  >
+                    {testimonials[activeTestimonial].name}, {testimonials[activeTestimonial].age}
+                  </motion.h4>
+                  <motion.p
+                    className="text-[#FF6B35]"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    {testimonials[activeTestimonial].course} • {testimonials[activeTestimonial].date}
+                  </motion.p>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <motion.div
+                className="absolute bottom-0 left-0 h-1 bg-[#FF6B35] rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: '100%' }}
+                transition={{ duration: 6, ease: 'linear' }}
+                key={`progress-${activeTestimonial}`}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Testimonial Navigation */}
+        <div className="flex justify-center gap-4 flex-wrap">
+          {testimonials.map((t, i) => (
+            <motion.button
+              key={i}
+              className={`px-6 py-3 rounded-2xl border transition-all flex items-center gap-3 ${
+                activeTestimonial === i
+                  ? 'bg-[#FF6B35]/20 border-[#FF6B35]/50 text-white'
+                  : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
+              }`}
+              onClick={() => setActiveTestimonial(i)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="text-2xl">{t.avatar}</span>
+              <span className="font-medium">{t.name}</span>
+            </motion.button>
+          ))}
+        </div>
+
+        {/* Google Reviews CTA */}
+        <motion.div
+          className="text-center mt-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <motion.a
+            href="https://g.page/r/fahrwerk-muenster/review"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/20 rounded-2xl text-white font-bold hover:bg-white/10 transition-all"
+            whileHover={{ scale: 1.05, borderColor: 'rgba(255,107,53,0.5)' }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span className="text-2xl">📝</span>
+            Auch eine Bewertung schreiben
+            <span>→</span>
+          </motion.a>
+        </motion.div>
       </div>
     </section>
   );
@@ -1181,9 +1960,9 @@ export default function Home() {
       <Navigation />
       <HeroSection />
       <KurseSection />
-      <KlassenSection />
-      <AppSection />
+      <FahrzeugeSection />
       <TeamSection />
+      <TestimonialsSection />
       <FAQSection />
       <KontaktSection />
       <Footer />
