@@ -269,24 +269,12 @@ function Navigation() {
         <div className="container mx-auto px-4 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
             <motion.div
-              className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FF6B35] to-[#E55A25] flex items-center justify-center font-black text-white text-xl shadow-xl shadow-[#FF6B35]/40"
-              whileHover={{ scale: 1.1, rotate: 10, boxShadow: '0 0 40px rgba(255,107,53,0.6)' }}
-              whileTap={{ scale: 0.9 }}
-              animate={{ 
-                boxShadow: ['0 0 20px rgba(255,107,53,0.3)', '0 0 40px rgba(255,107,53,0.5)', '0 0 20px rgba(255,107,53,0.3)']
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
+              className="relative h-10 w-48"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              FW
+              <Image src="/assets/logo.webp" alt="Fahrwerk Münster" fill className="object-contain" priority />
             </motion.div>
-            <div className="hidden sm:block">
-              <motion.div className="font-black text-white text-xl tracking-tight">
-                FAHRWERK
-              </motion.div>
-              <motion.div className="text-sm text-[#FF6B35] font-medium">
-                Münster
-              </motion.div>
-            </div>
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
@@ -838,16 +826,138 @@ function KurseSection() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+//                    KLASSEN SECTION (mit echten SVGs)
+// ═══════════════════════════════════════════════════════════════
+
+function KlassenSection() {
+  const klassen = [
+    { name: 'PKW', klasse: 'Klasse B / B197', icon: '/assets/classes/pkw.svg', desc: 'Der klassische Autoführerschein für alle PKW bis 3,5t', color: '#FF6B35' },
+    { name: 'Motorrad', klasse: 'Klasse A', icon: '/assets/classes/motorrad.svg', desc: 'Für alle Motorräder ohne Leistungsbegrenzung', color: '#8B5CF6' },
+    { name: 'Anhänger', klasse: 'Klasse BE', icon: '/assets/classes/anhaenger.svg', desc: 'PKW mit Anhänger über 750 kg', color: '#10B981' },
+  ];
+
+  return (
+    <section id="klassen" className="py-32 relative">
+      <div className="container mx-auto px-4">
+        <motion.div className="text-center mb-20" initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          <motion.span className="inline-block px-6 py-3 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-bold mb-8">
+            🚗 Führerscheinklassen
+          </motion.span>
+          <h2 className="text-5xl sm:text-6xl font-black text-white mb-8">
+            Welche <span className="text-[#FF6B35]">Klasse</span> brauchst du?
+          </h2>
+        </motion.div>
+
+        <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+          {klassen.map((k, i) => (
+            <motion.div
+              key={i}
+              className="group relative p-10 rounded-[2rem] bg-white/5 border border-white/10 overflow-hidden text-center"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.15 }}
+              whileHover={{ y: -15, scale: 1.03, borderColor: `${k.color}50` }}
+            >
+              <motion.div
+                className="relative w-32 h-32 mx-auto mb-8"
+                whileHover={{ scale: 1.15, rotate: 5 }}
+              >
+                <Image src={k.icon} alt={k.name} fill className="object-contain filter brightness-0 invert opacity-90" />
+              </motion.div>
+              <h3 className="text-3xl font-black text-white mb-2">{k.name}</h3>
+              <motion.p className="text-xl font-bold mb-4" style={{ color: k.color }}>{k.klasse}</motion.p>
+              <p className="text-white/60">{k.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+//                    APP SECTION (mit echtem Bild)
+// ═══════════════════════════════════════════════════════════════
+
+function AppSection() {
+  return (
+    <section className="py-32 relative overflow-hidden">
+      <div className="container mx-auto px-4">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
+            <motion.span className="inline-block px-6 py-3 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-bold mb-8">
+              📱 drive.buzz App
+            </motion.span>
+            <h2 className="text-5xl sm:text-6xl font-black text-white mb-8">
+              Lerne <span className="text-[#FF6B35]">digital</span> & flexibel
+            </h2>
+            <p className="text-xl text-white/60 mb-8 leading-relaxed">
+              Die drive.buzz App ermöglicht dir individuelles, flexibles und ortsunabhängiges Lernen – 
+              perfekt abgestimmt auf deine Fahrausbildung.
+            </p>
+            <ul className="space-y-4 mb-10">
+              {['Intelligente Lernfunktionen', 'Realistische Prüfungssimulationen', 'Termine & Kosten im Überblick', 'Jederzeit & überall verfügbar'].map((item, i) => (
+                <motion.li
+                  key={i}
+                  className="flex items-center gap-4 text-white/80 text-lg"
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <span className="w-8 h-8 rounded-full bg-[#FF6B35]/20 flex items-center justify-center text-[#FF6B35]">✓</span>
+                  {item}
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+          
+          <motion.div
+            className="relative"
+            initial={{ opacity: 0, x: 50, rotateY: -20 }}
+            whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
+            viewport={{ once: true }}
+            transition={{ type: 'spring' }}
+          >
+            <motion.div
+              className="relative w-full max-w-md mx-auto"
+              whileHover={{ scale: 1.05, rotateY: 10 }}
+              transition={{ type: 'spring' }}
+            >
+              <div className="relative aspect-square rounded-[3rem] overflow-hidden shadow-2xl shadow-[#FF6B35]/30">
+                <Image src="/assets/app-phone.webp" alt="drive.buzz Fahrschul App" fill className="object-cover" />
+              </div>
+              <motion.div
+                className="absolute -bottom-6 -right-6 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-400 rounded-2xl text-base font-black text-white shadow-xl"
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                📲 Kostenlos
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 //                    TEAM SECTION
 // ═══════════════════════════════════════════════════════════════
 
 function TeamSection() {
   const team = [
-    { name: 'Schero', role: 'Inhaber & Fahrlehrer', image: '/assets/team/schero.webp', klassen: 'B / BE', sprachen: 'DE, EN, KU', emoji: '⚽' },
-    { name: 'Nils', role: 'Fahrlehrer', image: '/assets/team/nils.webp', klassen: 'B / BE', sprachen: 'DE', emoji: '🎖️' },
-    { name: 'Alan', role: 'Fahrlehrer', image: '/assets/team/alan.webp', klassen: 'B / BE', sprachen: 'DE, EN, KU', emoji: '😄' },
-    { name: 'Saad', role: 'Fahrlehrer', image: '/assets/team/saad.webp', klassen: 'B / BE', sprachen: 'DE, EN', emoji: '🧘' },
-    { name: 'Idris', role: 'Fahrlehrer', image: '/assets/team/idris.webp', klassen: 'B / BE', sprachen: 'DE, AF', emoji: '💪' },
+    { name: 'Schero', role: 'Inhaber & Fahrlehrer', image: '/assets/team/schero.webp', hoverImage: '/assets/team/schero-hover.webp', klassen: 'B / BE', sprachen: 'DE, EN, KU', emoji: '⚽' },
+    { name: 'Nils', role: 'Fahrlehrer', image: '/assets/team/nils.webp', hoverImage: '/assets/team/nils-hover.webp', klassen: 'B / BE', sprachen: 'DE', emoji: '🎖️' },
+    { name: 'Alan', role: 'Fahrlehrer', image: '/assets/team/alan.webp', hoverImage: '/assets/team/alan-hover.webp', klassen: 'B / BE', sprachen: 'DE, EN, KU', emoji: '😄' },
+    { name: 'Saad', role: 'Fahrlehrer', image: '/assets/team/saad.webp', hoverImage: '/assets/team/saad-hover.webp', klassen: 'B / BE', sprachen: 'DE, EN', emoji: '🧘' },
+    { name: 'Idris', role: 'Fahrlehrer', image: '/assets/team/idris.webp', hoverImage: '/assets/team/idris-hover.webp', klassen: 'B / BE', sprachen: 'DE, AF', emoji: '💪' },
   ];
 
   return (
@@ -891,7 +1001,8 @@ function TeamSection() {
                 </motion.div>
 
                 <div className="relative w-full aspect-square rounded-2xl overflow-hidden mb-6 bg-gradient-to-br from-[#FF6B35]/20 to-purple-500/20">
-                  <Image src={member.image} alt={member.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <Image src={member.image} alt={member.name} fill className="object-cover transition-all duration-500 group-hover:opacity-0" />
+                  <Image src={member.hoverImage} alt={`${member.name} hover`} fill className="object-cover absolute inset-0 opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-110" />
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
                   />
@@ -1070,6 +1181,8 @@ export default function Home() {
       <Navigation />
       <HeroSection />
       <KurseSection />
+      <KlassenSection />
+      <AppSection />
       <TeamSection />
       <FAQSection />
       <KontaktSection />
