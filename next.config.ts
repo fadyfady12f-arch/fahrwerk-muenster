@@ -1,14 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'export',
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'fahrwerk-muenster.de',
-      },
-    ],
+    unoptimized: true,
   },
+  basePath: '/fahrwerk-muenster',
+  assetPrefix: '/fahrwerk-muenster/',
 };
 
 export default nextConfig;
