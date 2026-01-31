@@ -1,15 +1,211 @@
 'use client';
 
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, useMotionValue, useAnimationFrame, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 
 // ═══════════════════════════════════════════════════════════════
+//                    CRAZY BACKGROUND EFFECTS
+// ═══════════════════════════════════════════════════════════════
+
+function CrazyBackground() {
+  const { scrollY } = useScroll();
+  const y1 = useTransform(scrollY, [0, 3000], [0, -500]);
+  const y2 = useTransform(scrollY, [0, 3000], [0, -300]);
+  const y3 = useTransform(scrollY, [0, 3000], [0, -800]);
+  const rotate1 = useTransform(scrollY, [0, 3000], [0, 360]);
+  const rotate2 = useTransform(scrollY, [0, 3000], [0, -180]);
+  const scale1 = useTransform(scrollY, [0, 1500, 3000], [1, 1.5, 0.8]);
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      {/* Giant rotating gradient orb */}
+      <motion.div
+        className="absolute -top-[400px] -right-[400px] w-[1000px] h-[1000px] rounded-full"
+        style={{
+          background: 'radial-gradient(circle, rgba(255,107,53,0.15) 0%, transparent 70%)',
+          y: y1,
+          rotate: rotate1,
+          scale: scale1,
+        }}
+      />
+      
+      {/* Floating blue orb */}
+      <motion.div
+        className="absolute top-[40%] -left-[200px] w-[600px] h-[600px] rounded-full"
+        style={{
+          background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)',
+          y: y2,
+          rotate: rotate2,
+        }}
+      />
+      
+      {/* Purple accent */}
+      <motion.div
+        className="absolute top-[60%] right-[10%] w-[400px] h-[400px] rounded-full"
+        style={{
+          background: 'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)',
+          y: y3,
+        }}
+      />
+
+      {/* Grid pattern that moves */}
+      <motion.div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255,107,53,0.5) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,107,53,0.5) 1px, transparent 1px)
+          `,
+          backgroundSize: '100px 100px',
+          y: useTransform(scrollY, [0, 3000], [0, 200]),
+        }}
+      />
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+//                    FLOATING 3D SHAPES
+// ═══════════════════════════════════════════════════════════════
+
+function Floating3DShapes() {
+  const { scrollY } = useScroll();
+  
+  const shapes = [
+    { x: '10%', y: '20%', size: 60, color: '#FF6B35', delay: 0 },
+    { x: '85%', y: '15%', size: 40, color: '#8B5CF6', delay: 0.5 },
+    { x: '75%', y: '60%', size: 50, color: '#10B981', delay: 1 },
+    { x: '15%', y: '70%', size: 35, color: '#F59E0B', delay: 1.5 },
+    { x: '50%', y: '40%', size: 25, color: '#EC4899', delay: 2 },
+    { x: '90%', y: '80%', size: 45, color: '#06B6D4', delay: 0.3 },
+    { x: '5%', y: '50%', size: 30, color: '#FF6B35', delay: 0.8 },
+    { x: '60%', y: '85%', size: 55, color: '#8B5CF6', delay: 1.2 },
+  ];
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      {shapes.map((shape, i) => (
+        <motion.div
+          key={i}
+          className="absolute"
+          style={{
+            left: shape.x,
+            top: shape.y,
+            width: shape.size,
+            height: shape.size,
+          }}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 0.6, scale: 1 }}
+          transition={{ delay: shape.delay, duration: 1 }}
+        >
+          <motion.div
+            className="w-full h-full rounded-2xl border-2"
+            style={{
+              borderColor: shape.color,
+              background: `${shape.color}10`,
+              y: useTransform(scrollY, [0, 3000], [0, -200 - i * 50]),
+              rotate: useTransform(scrollY, [0, 3000], [0, 360 + i * 45]),
+            }}
+            animate={{
+              y: [0, -20, 0],
+              rotateX: [0, 15, 0],
+              rotateY: [0, 15, 0],
+            }}
+            transition={{
+              duration: 4 + i,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+//                    SPEED LINES ON SCROLL
+// ═══════════════════════════════════════════════════════════════
+
+function SpeedLines() {
+  const { scrollY } = useScroll();
+  const opacity = useTransform(scrollY, [0, 100, 500], [0, 1, 0]);
+  
+  return (
+    <motion.div
+      className="fixed inset-0 pointer-events-none z-10 overflow-hidden"
+      style={{ opacity }}
+    >
+      {[...Array(20)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute h-[2px] bg-gradient-to-r from-transparent via-[#FF6B35]/50 to-transparent"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            width: `${100 + Math.random() * 200}px`,
+            rotate: `${-45 + Math.random() * 10}deg`,
+          }}
+          animate={{
+            x: [-200, 200],
+            opacity: [0, 1, 0],
+          }}
+          transition={{
+            duration: 0.5,
+            repeat: Infinity,
+            delay: i * 0.1,
+          }}
+        />
+      ))}
+    </motion.div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+//                    ANIMATED PARTICLES
+// ═══════════════════════════════════════════════════════════════
+
+function AnimatedParticles() {
+  const { scrollY } = useScroll();
+  
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      {[...Array(50)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            width: 2 + Math.random() * 4,
+            height: 2 + Math.random() * 4,
+            background: ['#FF6B35', '#8B5CF6', '#10B981', '#F59E0B'][i % 4],
+            y: useTransform(scrollY, [0, 3000], [0, -500 - Math.random() * 500]),
+          }}
+          animate={{
+            y: [0, -30, 0],
+            x: [0, Math.random() * 20 - 10, 0],
+            opacity: [0.2, 0.8, 0.2],
+            scale: [1, 1.5, 1],
+          }}
+          transition={{
+            duration: 2 + Math.random() * 3,
+            repeat: Infinity,
+            delay: Math.random() * 2,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 //                    ANIMATED COUNTER
 // ═══════════════════════════════════════════════════════════════
 
-function AnimatedCounter({ value, suffix = '', duration = 2 }: { value: number; suffix?: string; duration?: number }) {
+function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: string }) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -27,47 +223,17 @@ function AnimatedCounter({ value, suffix = '', duration = 2 }: { value: number; 
     if (!isVisible) return;
     let start = 0;
     const end = value;
-    const stepTime = (duration * 1000) / end;
+    const duration = 2000;
+    const stepTime = duration / end;
     const timer = setInterval(() => {
       start += 1;
       setCount(start);
       if (start >= end) clearInterval(timer);
     }, stepTime);
     return () => clearInterval(timer);
-  }, [isVisible, value, duration]);
+  }, [isVisible, value]);
 
   return <span ref={ref}>{count}{suffix}</span>;
-}
-
-// ═══════════════════════════════════════════════════════════════
-//                    FLOATING PARTICLES
-// ═══════════════════════════════════════════════════════════════
-
-function FloatingParticles() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(20)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-2 h-2 bg-[#FF6B35]/20 rounded-full"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-          }}
-          animate={{
-            y: [0, -30, 0],
-            x: [0, Math.random() * 20 - 10, 0],
-            opacity: [0.2, 0.5, 0.2],
-          }}
-          transition={{
-            duration: 3 + Math.random() * 2,
-            repeat: Infinity,
-            delay: Math.random() * 2,
-          }}
-        />
-      ))}
-    </div>
-  );
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -77,6 +243,9 @@ function FloatingParticles() {
 function Navigation() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { scrollY } = useScroll();
+  const navY = useTransform(scrollY, [0, 100], [0, 0]);
+  const navBlur = useTransform(scrollY, [0, 100], [0, 20]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -87,43 +256,39 @@ function Navigation() {
   return (
     <>
       <motion.nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'bg-black/90 backdrop-blur-lg shadow-lg' : 'bg-transparent'
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          scrolled ? 'bg-black/80 shadow-2xl shadow-black/50' : 'bg-transparent'
         }`}
+        style={{
+          backdropFilter: `blur(${scrolled ? 20 : 0}px)`,
+        }}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.5, type: 'spring' }}
+        transition={{ duration: 0.8, type: 'spring', bounce: 0.3 }}
       >
         <div className="container mx-auto px-4 h-20 flex items-center justify-between">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             <motion.div
-              className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#E55A25] flex items-center justify-center font-bold text-white text-lg shadow-lg shadow-[#FF6B35]/30"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              whileTap={{ scale: 0.95 }}
+              className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FF6B35] to-[#E55A25] flex items-center justify-center font-black text-white text-xl shadow-xl shadow-[#FF6B35]/40"
+              whileHover={{ scale: 1.1, rotate: 10, boxShadow: '0 0 40px rgba(255,107,53,0.6)' }}
+              whileTap={{ scale: 0.9 }}
+              animate={{ 
+                boxShadow: ['0 0 20px rgba(255,107,53,0.3)', '0 0 40px rgba(255,107,53,0.5)', '0 0 20px rgba(255,107,53,0.3)']
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
             >
               FW
             </motion.div>
             <div className="hidden sm:block">
-              <motion.div
-                className="font-bold text-white text-lg"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-              >
+              <motion.div className="font-black text-white text-xl tracking-tight">
                 FAHRWERK
               </motion.div>
-              <motion.div
-                className="text-xs text-[#FF6B35]"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
+              <motion.div className="text-sm text-[#FF6B35] font-medium">
                 Münster
               </motion.div>
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {['Kurse', 'Klassen', 'Team', 'FAQ', 'Kontakt'].map((item, i) => (
               <motion.div
@@ -134,16 +299,20 @@ function Navigation() {
               >
                 <Link
                   href={`#${item.toLowerCase()}`}
-                  className="relative text-sm text-white/70 hover:text-white transition-colors group"
+                  className="relative text-sm font-medium text-white/70 hover:text-white transition-colors group py-2"
                 >
                   {item}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FF6B35] group-hover:w-full transition-all duration-300" />
+                  <motion.span
+                    className="absolute -bottom-0 left-0 h-0.5 bg-gradient-to-r from-[#FF6B35] to-[#FFB366]"
+                    initial={{ width: 0 }}
+                    whileHover={{ width: '100%' }}
+                    transition={{ duration: 0.3 }}
+                  />
                 </Link>
               </motion.div>
             ))}
           </div>
 
-          {/* CTA */}
           <div className="flex items-center gap-4">
             <motion.a
               href="tel:+4917682081601"
@@ -151,65 +320,69 @@ function Navigation() {
               whileHover={{ scale: 1.05 }}
             >
               <motion.span
-                animate={{ rotate: [0, 15, -15, 0] }}
-                transition={{ repeat: Infinity, duration: 1.5, repeatDelay: 3 }}
+                animate={{ rotate: [0, 20, -20, 0], scale: [1, 1.2, 1] }}
+                transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}
+                className="text-xl"
               >
                 📞
               </motion.span>
               <span>0176-82081601</span>
             </motion.a>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <Link
                 href="#kontakt"
-                className="px-5 py-2.5 bg-gradient-to-r from-[#FF6B35] to-[#E55A25] rounded-xl text-sm font-semibold text-white shadow-lg shadow-[#FF6B35]/30 hover:shadow-[#FF6B35]/50 transition-shadow"
+                className="relative px-6 py-3 rounded-xl text-sm font-bold text-white overflow-hidden group"
               >
-                Jetzt anmelden
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-[#FF6B35] to-[#E55A25]"
+                  animate={{
+                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                />
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-[#FFB366] to-[#FF6B35] opacity-0 group-hover:opacity-100 transition-opacity"
+                />
+                <span className="relative">Jetzt anmelden</span>
               </Link>
             </motion.div>
 
-            {/* Mobile Menu Button */}
             <motion.button
-              className="md:hidden w-10 h-10 flex flex-col justify-center items-center gap-1.5"
+              className="md:hidden w-12 h-12 flex flex-col justify-center items-center gap-1.5 bg-white/5 rounded-xl"
               onClick={() => setMobileOpen(!mobileOpen)}
               whileTap={{ scale: 0.9 }}
             >
-              <motion.span
-                className="w-6 h-0.5 bg-white rounded"
-                animate={{ rotate: mobileOpen ? 45 : 0, y: mobileOpen ? 8 : 0 }}
-              />
-              <motion.span
-                className="w-6 h-0.5 bg-white rounded"
-                animate={{ opacity: mobileOpen ? 0 : 1 }}
-              />
-              <motion.span
-                className="w-6 h-0.5 bg-white rounded"
-                animate={{ rotate: mobileOpen ? -45 : 0, y: mobileOpen ? -8 : 0 }}
-              />
+              <motion.span className="w-6 h-0.5 bg-white rounded" animate={{ rotate: mobileOpen ? 45 : 0, y: mobileOpen ? 8 : 0 }} />
+              <motion.span className="w-6 h-0.5 bg-white rounded" animate={{ opacity: mobileOpen ? 0 : 1, scale: mobileOpen ? 0 : 1 }} />
+              <motion.span className="w-6 h-0.5 bg-white rounded" animate={{ rotate: mobileOpen ? -45 : 0, y: mobileOpen ? -8 : 0 }} />
             </motion.button>
           </div>
         </div>
       </motion.nav>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            className="fixed inset-0 z-40 bg-black/95 backdrop-blur-lg pt-24 px-6"
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
+            className="fixed inset-0 z-40 bg-black/98 backdrop-blur-xl pt-28 px-8"
+            initial={{ opacity: 0, clipPath: 'circle(0% at 95% 5%)' }}
+            animate={{ opacity: 1, clipPath: 'circle(150% at 95% 5%)' }}
+            exit={{ opacity: 0, clipPath: 'circle(0% at 95% 5%)' }}
+            transition={{ duration: 0.5 }}
           >
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-8">
               {['Kurse', 'Klassen', 'Team', 'FAQ', 'Kontakt'].map((item, i) => (
                 <motion.div
                   key={item}
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, x: -50, rotate: -5 }}
+                  animate={{ opacity: 1, x: 0, rotate: 0 }}
                   transition={{ delay: i * 0.1 }}
                 >
                   <Link
                     href={`#${item.toLowerCase()}`}
-                    className="text-2xl font-bold text-white"
+                    className="text-4xl font-black text-white hover:text-[#FF6B35] transition-colors"
                     onClick={() => setMobileOpen(false)}
                   >
                     {item}
@@ -230,159 +403,162 @@ function Navigation() {
 
 function HeroSection() {
   const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start start', 'end start'],
-  });
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
+  const rotateX = useTransform(scrollYProgress, [0, 0.5], [0, 20]);
 
   return (
     <section ref={ref} className="relative min-h-screen flex items-center pt-20 overflow-hidden">
-      {/* Animated Background */}
-      <motion.div className="absolute inset-0 pointer-events-none" style={{ y }}>
-        <div className="absolute top-1/4 right-1/4 w-[600px] h-[600px] bg-[#FF6B35]/20 rounded-full blur-[150px]" />
-        <div className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-[100px]" />
-      </motion.div>
-
-      <FloatingParticles />
-
-      <motion.div className="container mx-auto px-4 relative z-10" style={{ opacity }}>
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
+      <motion.div
+        className="container mx-auto px-4 relative z-10"
+        style={{ opacity, scale, rotateX, transformPerspective: 1000 }}
+      >
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: 'spring', duration: 0.8 }}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#FF6B35]/20 to-[#FF6B35]/5 border border-[#FF6B35]/30 mb-8"
+              initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', duration: 1 }}
+              className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-[#FF6B35]/20 via-[#FF6B35]/10 to-transparent border border-[#FF6B35]/30 mb-10"
             >
               <motion.span
-                animate={{ scale: [1, 1.2, 1] }}
+                animate={{ scale: [1, 1.3, 1], rotate: [0, 10, -10, 0] }}
                 transition={{ repeat: Infinity, duration: 2 }}
-                className="text-xl"
+                className="text-2xl"
               >
                 🚗
               </motion.span>
-              <span className="text-sm font-medium text-white/90">Führerschein in 10 Tagen möglich!</span>
-              <motion.span
-                animate={{ x: [0, 5, 0] }}
-                transition={{ repeat: Infinity, duration: 1 }}
-              >
-                →
-              </motion.span>
+              <span className="text-base font-semibold text-white/90">Führerschein in 10 Tagen möglich!</span>
+              <motion.span animate={{ x: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>→</motion.span>
             </motion.div>
 
-            <motion.h1
-              className="text-5xl sm:text-6xl lg:text-7xl font-black mb-8 leading-tight"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.8 }}
-            >
-              <motion.span
-                className="text-white block"
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
+            <div className="overflow-hidden mb-10">
+              <motion.h1
+                className="text-6xl sm:text-7xl lg:text-8xl font-black leading-[0.9]"
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.8, type: 'spring' }}
               >
-                FAHRWERK.
-              </motion.span>
-              <motion.span
-                className="bg-gradient-to-r from-[#FF6B35] via-[#FFB366] to-[#FF6B35] bg-clip-text text-transparent bg-[length:200%_auto] block"
-                animate={{ backgroundPosition: ['0%', '200%'] }}
-                transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-              >
-                Die Fahrschule
-              </motion.span>
-              <motion.span
-                className="text-white block"
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                in Münster
-              </motion.span>
-            </motion.h1>
+                <motion.span
+                  className="text-white block"
+                  initial={{ x: -100, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  FAHRWERK.
+                </motion.span>
+                <motion.span
+                  className="block bg-gradient-to-r from-[#FF6B35] via-[#FFB366] to-[#FF6B35] bg-clip-text text-transparent bg-[length:200%_auto]"
+                  animate={{ backgroundPosition: ['0%', '200%'] }}
+                  transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
+                  initial={{ x: -100, opacity: 0 }}
+                  whileInView={{ x: 0, opacity: 1 }}
+                >
+                  Die Fahrschule
+                </motion.span>
+                <motion.span
+                  className="text-white block"
+                  initial={{ x: -100, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  in Münster
+                </motion.span>
+              </motion.h1>
+            </div>
 
             <motion.p
-              className="text-xl text-white/60 mb-10 max-w-lg leading-relaxed"
-              initial={{ opacity: 0, y: 20 }}
+              className="text-xl text-white/60 mb-12 max-w-lg leading-relaxed"
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
-              Schnell. Schneller. <span className="text-[#FF6B35] font-semibold">FAHRWERK.</span> Mit unserer 
-              Intensivausbildung erreichst du deinen Führerschein in Rekordzeit.
+              Schnell. Schneller. <span className="text-[#FF6B35] font-bold">FAHRWERK.</span> Dein 
+              Führerschein in Rekordzeit – kompetent, vertrauensvoll, zum fairen Preis.
             </motion.p>
 
             <motion.div
-              className="flex flex-wrap gap-4"
-              initial={{ opacity: 0, y: 20 }}
+              className="flex flex-wrap gap-5"
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
             >
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link
                   href="#kontakt"
-                  className="group px-8 py-4 bg-gradient-to-r from-[#FF6B35] to-[#E55A25] rounded-2xl font-bold text-white flex items-center gap-3 shadow-2xl shadow-[#FF6B35]/40 hover:shadow-[#FF6B35]/60 transition-shadow"
+                  className="group relative px-10 py-5 rounded-2xl font-bold text-white text-lg overflow-hidden"
                 >
-                  <span>Jetzt starten</span>
-                  <motion.span
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ repeat: Infinity, duration: 1 }}
-                  >
-                    →
-                  </motion.span>
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-[#FF6B35] to-[#E55A25]"
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <motion.div
+                    className="absolute inset-0 bg-[#FF6B35]"
+                    initial={{ x: '-100%' }}
+                    whileHover={{ x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  <span className="relative flex items-center gap-3">
+                    Jetzt starten
+                    <motion.span animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1 }}>🚀</motion.span>
+                  </span>
                 </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link
                   href="#kurse"
-                  className="px-8 py-4 bg-white/5 border border-white/20 rounded-2xl font-bold text-white hover:bg-white/10 transition-colors backdrop-blur-sm"
+                  className="px-10 py-5 bg-white/5 border-2 border-white/20 rounded-2xl font-bold text-white text-lg hover:bg-white/10 hover:border-white/30 transition-all backdrop-blur-sm"
                 >
                   Kurse entdecken
                 </Link>
               </motion.div>
             </motion.div>
 
-            {/* Stats */}
             <motion.div
-              className="flex flex-wrap gap-8 mt-14 pt-8 border-t border-white/10"
+              className="flex flex-wrap gap-10 mt-16 pt-10 border-t border-white/10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.9 }}
+              transition={{ delay: 1 }}
             >
               {[
-                { value: 10, label: 'Tage Express', suffix: '' },
-                { value: 5, label: 'Google Rating', suffix: '.0 ⭐' },
-                { value: 1000, label: 'Fahrschüler', suffix: '+' },
+                { value: 10, label: 'Tage Express', suffix: '', color: '#FF6B35' },
+                { value: 5, label: 'Google Rating', suffix: '.0 ⭐', color: '#F59E0B' },
+                { value: 1000, label: 'Fahrschüler', suffix: '+', color: '#10B981' },
               ].map((stat, i) => (
                 <motion.div
                   key={i}
                   className="text-center"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1 + i * 0.1 }}
+                  initial={{ opacity: 0, y: 30, scale: 0.5 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 1.2 + i * 0.15, type: 'spring' }}
+                  whileHover={{ scale: 1.1 }}
                 >
-                  <div className="text-3xl font-black text-[#FF6B35]">
+                  <motion.div
+                    className="text-4xl font-black"
+                    style={{ color: stat.color }}
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+                  >
                     <AnimatedCounter value={stat.value} suffix={stat.suffix} />
-                  </div>
-                  <div className="text-sm text-white/50 mt-1">{stat.label}</div>
+                  </motion.div>
+                  <div className="text-sm text-white/50 mt-2">{stat.label}</div>
                 </motion.div>
               ))}
             </motion.div>
           </div>
 
-          {/* Right - 3D Card Grid */}
+          {/* Right - CRAZY 3D Cards */}
           <motion.div
-            className="relative perspective-1000"
-            initial={{ opacity: 0, rotateY: -30 }}
-            animate={{ opacity: 1, rotateY: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
+            className="relative"
+            initial={{ opacity: 0, x: 100, rotateY: -30 }}
+            animate={{ opacity: 1, x: 0, rotateY: 0 }}
+            transition={{ delay: 0.5, duration: 1, type: 'spring' }}
+            style={{ transformStyle: 'preserve-3d', perspective: 1000 }}
           >
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 gap-6">
               {[
                 { icon: '🚗', title: 'PKW', desc: 'Klasse B/B197', color: '#FF6B35', delay: 0.6 },
                 { icon: '🏍️', title: 'Motorrad', desc: 'Klasse A', color: '#8B5CF6', delay: 0.7 },
@@ -391,17 +567,33 @@ function HeroSection() {
               ].map((item, i) => (
                 <motion.div
                   key={i}
-                  className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 backdrop-blur-sm overflow-hidden"
-                  initial={{ opacity: 0, y: 30, rotateX: 20 }}
+                  className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/10 to-white/[0.02] border border-white/10 backdrop-blur-sm overflow-hidden cursor-pointer"
+                  initial={{ opacity: 0, y: 50, rotateX: 30 }}
                   animate={{ opacity: 1, y: 0, rotateX: 0 }}
                   transition={{ delay: item.delay, type: 'spring' }}
                   whileHover={{ 
-                    scale: 1.05, 
-                    rotateY: 5,
-                    boxShadow: `0 25px 50px -12px ${item.color}40`,
+                    scale: 1.08,
+                    rotateY: 10,
+                    rotateX: -5,
+                    z: 50,
+                    boxShadow: `0 30px 60px -15px ${item.color}50`,
                   }}
+                  style={{ transformStyle: 'preserve-3d' }}
                 >
-                  {/* Glow effect */}
+                  {/* Animated border glow */}
+                  <motion.div
+                    className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{
+                      background: `linear-gradient(45deg, ${item.color}40, transparent, ${item.color}40)`,
+                      backgroundSize: '200% 200%',
+                    }}
+                    animate={{
+                      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  
+                  {/* Inner glow */}
                   <div
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                     style={{
@@ -410,186 +602,215 @@ function HeroSection() {
                   />
                   
                   <motion.div
-                    className="relative w-16 h-16 rounded-2xl flex items-center justify-center text-4xl mb-5"
-                    style={{ background: `${item.color}20` }}
-                    whileHover={{ rotate: [0, -10, 10, 0] }}
+                    className="relative w-20 h-20 rounded-2xl flex items-center justify-center text-5xl mb-6"
+                    style={{ background: `${item.color}20`, transform: 'translateZ(20px)' }}
+                    whileHover={{ rotate: [0, -15, 15, 0], scale: 1.2 }}
                     transition={{ duration: 0.5 }}
                   >
                     {item.icon}
                   </motion.div>
-                  <h3 className="relative font-bold text-white text-xl mb-2">{item.title}</h3>
-                  <p className="relative text-white/50">{item.desc}</p>
+                  <h3 className="relative font-black text-white text-2xl mb-2" style={{ transform: 'translateZ(30px)' }}>
+                    {item.title}
+                  </h3>
+                  <p className="relative text-white/50 text-lg" style={{ transform: 'translateZ(15px)' }}>
+                    {item.desc}
+                  </p>
                   
-                  {/* Arrow */}
                   <motion.div
-                    className="absolute bottom-6 right-6 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ background: item.color }}
-                    whileHover={{ scale: 1.1 }}
+                    className="absolute bottom-6 right-6 w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                    style={{ background: item.color, transform: 'translateZ(40px)' }}
+                    whileHover={{ scale: 1.2 }}
                   >
-                    <span className="text-white">→</span>
+                    <span className="text-white text-xl">→</span>
                   </motion.div>
                 </motion.div>
               ))}
             </div>
 
-            {/* Floating Badge */}
+            {/* Floating badge */}
             <motion.div
-              className="absolute -top-4 -right-4 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full text-sm font-bold text-white shadow-lg"
-              initial={{ scale: 0, rotate: -20 }}
+              className="absolute -top-6 -right-6 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-400 rounded-2xl text-base font-black text-white shadow-2xl shadow-green-500/50"
+              initial={{ scale: 0, rotate: -30 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 1.2, type: 'spring' }}
-              whileHover={{ scale: 1.1 }}
+              transition={{ delay: 1.5, type: 'spring', bounce: 0.5 }}
+              whileHover={{ scale: 1.1, rotate: 5 }}
             >
-              ⭐ Top bewertet!
+              <motion.span
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              >
+                ⭐
+              </motion.span>
+              {' '}Top bewertet!
             </motion.div>
           </motion.div>
         </div>
       </motion.div>
 
-      {/* Scroll Indicator */}
+      {/* Epic scroll indicator */}
       <motion.div
         className="absolute bottom-10 left-1/2 -translate-x-1/2"
-        animate={{ y: [0, 15, 0] }}
+        animate={{ y: [0, 20, 0] }}
         transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
       >
-        <div className="w-8 h-14 rounded-full border-2 border-white/30 flex justify-center pt-3">
+        <motion.div
+          className="w-10 h-16 rounded-full border-2 border-white/30 flex justify-center pt-4"
+          whileHover={{ borderColor: '#FF6B35', scale: 1.1 }}
+        >
           <motion.div
-            className="w-2 h-3 bg-[#FF6B35] rounded-full"
-            animate={{ y: [0, 8, 0], opacity: [1, 0.5, 1] }}
+            className="w-3 h-4 bg-gradient-to-b from-[#FF6B35] to-[#E55A25] rounded-full"
+            animate={{ y: [0, 12, 0], opacity: [1, 0.5, 1] }}
             transition={{ repeat: Infinity, duration: 2 }}
           />
-        </div>
+        </motion.div>
+        <motion.p
+          className="text-white/30 text-xs mt-3 text-center"
+          animate={{ opacity: [0.3, 0.7, 0.3] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+        >
+          Scroll down
+        </motion.p>
       </motion.div>
     </section>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════
-//                    KURSE SECTION
+//                    KURSE SECTION WITH SCROLL EFFECTS
 // ═══════════════════════════════════════════════════════════════
 
 function KurseSection() {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
+  const rotate = useTransform(scrollYProgress, [0, 1], [-5, 5]);
+
   const kurse = [
-    {
-      title: 'Klassisch',
-      duration: '3-6 Monate',
-      icon: '📚',
-      color: '#10B981',
-      gradient: 'from-emerald-500/20 to-emerald-500/5',
-      features: ['Flexibles Lerntempo', 'Persönliche Betreuung', 'Easy Ausbildung', 'Keine Eile'],
-      popular: false,
-    },
-    {
-      title: 'Intensiv',
-      duration: '4-6 Wochen',
-      icon: '🚀',
-      color: '#FF6B35',
-      gradient: 'from-[#FF6B35]/30 to-[#FF6B35]/5',
-      features: ['Theorie + Praxis verzahnt', 'Hoher Lerneffekt', 'Bevorzugte Antragstellung', 'Schneller fertig'],
-      popular: true,
-    },
-    {
-      title: 'Express',
-      duration: '10 Tage',
-      icon: '⚡',
-      color: '#8B5CF6',
-      gradient: 'from-purple-500/20 to-purple-500/5',
-      features: ['Maximale Geschwindigkeit', 'Sofortige Prüfungen', 'Bevorzugte Antragstellung', 'Rekordzeit'],
-      popular: false,
-    },
+    { title: 'Klassisch', duration: '3-6 Monate', icon: '📚', color: '#10B981', features: ['Flexibles Lerntempo', 'Persönliche Betreuung', 'Easy Ausbildung', 'Keine Eile'], popular: false },
+    { title: 'Intensiv', duration: '4-6 Wochen', icon: '🚀', color: '#FF6B35', features: ['Theorie + Praxis verzahnt', 'Hoher Lerneffekt', 'Bevorzugte Antragstellung', 'Schneller fertig'], popular: true },
+    { title: 'Express', duration: '10 Tage', icon: '⚡', color: '#8B5CF6', features: ['Maximale Geschwindigkeit', 'Sofortige Prüfungen', 'Bevorzugte Antragstellung', 'Rekordzeit'], popular: false },
   ];
 
   return (
-    <section id="kurse" className="py-32 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#FF6B35]/5 rounded-full blur-[100px]" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-500/5 rounded-full blur-[80px]" />
-      </div>
+    <section id="kurse" ref={ref} className="py-40 relative overflow-hidden">
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        style={{ y, rotate }}
+      >
+        <div className="absolute top-1/4 left-0 w-[500px] h-[500px] bg-[#FF6B35]/5 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/4 right-0 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[80px]" />
+      </motion.div>
 
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
-          className="text-center mb-20"
-          initial={{ opacity: 0, y: 30 }}
+          className="text-center mb-24"
+          initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
           <motion.span
-            className="inline-block px-5 py-2 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-semibold mb-6"
-            whileHover={{ scale: 1.05 }}
+            className="inline-block px-6 py-3 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-bold mb-8"
+            whileHover={{ scale: 1.1 }}
+            animate={{ boxShadow: ['0 0 20px rgba(255,107,53,0)', '0 0 40px rgba(255,107,53,0.3)', '0 0 20px rgba(255,107,53,0)'] }}
+            transition={{ duration: 2, repeat: Infinity }}
           >
             🎓 Von Standard bis Express
           </motion.span>
-          <h2 className="text-4xl sm:text-5xl font-black text-white mb-6">
+          <h2 className="text-5xl sm:text-6xl font-black text-white mb-8">
             In deinem Tempo zum{' '}
-            <span className="text-[#FF6B35]">Führerschein</span>
+            <motion.span
+              className="text-[#FF6B35] inline-block"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              Führerschein
+            </motion.span>
           </h2>
           <p className="text-xl text-white/60 max-w-2xl mx-auto">
-            Wähle das Ausbildungsmodell, das zu dir passt. 
-            Wir bringen dich ans Ziel! 🎯
+            Wähle das Ausbildungsmodell, das zu dir passt. Wir bringen dich ans Ziel! 🎯
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto">
           {kurse.map((kurs, i) => (
             <motion.div
               key={i}
-              className={`relative group`}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              className="relative group"
+              initial={{ opacity: 0, y: 80, rotateX: 30 }}
+              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.15 }}
+              transition={{ delay: i * 0.2, type: 'spring' }}
             >
               <motion.div
-                className={`relative p-8 rounded-3xl border bg-gradient-to-b ${kurs.gradient} backdrop-blur-sm overflow-hidden h-full ${
+                className={`relative p-10 rounded-[2rem] border overflow-hidden h-full ${
                   kurs.popular
-                    ? 'border-[#FF6B35]/50 shadow-2xl shadow-[#FF6B35]/20'
-                    : 'border-white/10'
+                    ? 'bg-gradient-to-b from-[#FF6B35]/20 to-transparent border-[#FF6B35]/50'
+                    : 'bg-white/5 border-white/10'
                 }`}
-                whileHover={{ y: -10, scale: 1.02 }}
+                whileHover={{ y: -20, scale: 1.02, rotateY: 5 }}
                 transition={{ type: 'spring', stiffness: 300 }}
+                style={{ transformStyle: 'preserve-3d' }}
               >
+                {/* Animated shine */}
+                <motion.div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100"
+                  style={{
+                    background: 'linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%)',
+                    backgroundSize: '200% 200%',
+                  }}
+                  animate={{ backgroundPosition: ['0% 0%', '200% 200%'] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+
                 {kurs.popular && (
                   <motion.div
-                    className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-gradient-to-r from-[#FF6B35] to-[#E55A25] rounded-full text-sm font-bold text-white shadow-lg"
-                    initial={{ scale: 0, y: 20 }}
+                    className="absolute -top-5 left-1/2 -translate-x-1/2 px-8 py-3 bg-gradient-to-r from-[#FF6B35] to-[#E55A25] rounded-full text-sm font-black text-white shadow-xl shadow-[#FF6B35]/40"
+                    initial={{ scale: 0, y: 30 }}
                     whileInView={{ scale: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.5, type: 'spring' }}
+                    transition={{ delay: 0.5, type: 'spring', bounce: 0.5 }}
+                    animate={{ scale: [1, 1.05, 1] }}
                   >
                     🔥 BELIEBT
                   </motion.div>
                 )}
 
                 <motion.div
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center text-5xl mb-8"
+                  className="w-24 h-24 rounded-3xl flex items-center justify-center text-6xl mb-10"
                   style={{ background: `${kurs.color}20` }}
-                  whileHover={{ rotate: [0, -10, 10, -5, 0], scale: 1.1 }}
-                  transition={{ duration: 0.5 }}
+                  whileHover={{ rotate: [0, -20, 20, 0], scale: 1.2 }}
+                  transition={{ duration: 0.6 }}
                 >
                   {kurs.icon}
                 </motion.div>
 
-                <h3 className="text-2xl font-bold text-white mb-3">{kurs.title}</h3>
-                <div className="mb-8">
-                  <span className="text-4xl font-black" style={{ color: kurs.color }}>
-                    {kurs.duration}
-                  </span>
-                </div>
+                <h3 className="text-3xl font-black text-white mb-4">{kurs.title}</h3>
+                <motion.div
+                  className="text-5xl font-black mb-10"
+                  style={{ color: kurs.color }}
+                  animate={{ scale: [1, 1.02, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  {kurs.duration}
+                </motion.div>
 
-                <ul className="space-y-4 mb-8">
+                <ul className="space-y-5 mb-10">
                   {kurs.features.map((feature, j) => (
                     <motion.li
                       key={j}
-                      className="flex items-center gap-3 text-white/70"
-                      initial={{ opacity: 0, x: -20 }}
+                      className="flex items-center gap-4 text-white/70 text-lg"
+                      initial={{ opacity: 0, x: -30 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
-                      transition={{ delay: 0.3 + j * 0.1 }}
+                      transition={{ delay: 0.4 + j * 0.1 }}
                     >
-                      <span className="w-6 h-6 rounded-full flex items-center justify-center text-sm" style={{ background: `${kurs.color}30`, color: kurs.color }}>
+                      <motion.span
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-base"
+                        style={{ background: `${kurs.color}30`, color: kurs.color }}
+                        whileHover={{ scale: 1.3, rotate: 360 }}
+                      >
                         ✓
-                      </span>
+                      </motion.span>
                       {feature}
                     </motion.li>
                   ))}
@@ -598,23 +819,15 @@ function KurseSection() {
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link
                     href="#kontakt"
-                    className={`block text-center py-4 rounded-2xl font-bold transition-all ${
+                    className={`block text-center py-5 rounded-2xl font-black text-lg transition-all ${
                       kurs.popular
-                        ? 'bg-gradient-to-r from-[#FF6B35] to-[#E55A25] text-white shadow-lg shadow-[#FF6B35]/30'
+                        ? 'bg-gradient-to-r from-[#FF6B35] to-[#E55A25] text-white shadow-xl shadow-[#FF6B35]/40 hover:shadow-[#FF6B35]/60'
                         : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'
                     }`}
                   >
                     Kurs wählen →
                   </Link>
                 </motion.div>
-
-                {/* Hover glow */}
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl"
-                  style={{
-                    background: `radial-gradient(circle at 50% 100%, ${kurs.color}15 0%, transparent 70%)`,
-                  }}
-                />
               </motion.div>
             </motion.div>
           ))}
@@ -638,76 +851,59 @@ function TeamSection() {
   ];
 
   return (
-    <section id="team" className="py-32 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent relative">
+    <section id="team" className="py-40 relative">
       <div className="container mx-auto px-4">
         <motion.div
-          className="text-center mb-20"
-          initial={{ opacity: 0, y: 30 }}
+          className="text-center mb-24"
+          initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <motion.span
-            className="inline-block px-5 py-2 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-semibold mb-6"
-            whileHover={{ scale: 1.05 }}
-          >
+          <motion.span className="inline-block px-6 py-3 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-bold mb-8">
             👨‍🏫 Mit uns zum Führerschein!
           </motion.span>
-          <h2 className="text-4xl sm:text-5xl font-black text-white mb-6">
+          <h2 className="text-5xl sm:text-6xl font-black text-white mb-8">
             Das <span className="text-[#FF6B35]">FAHRWERK</span> Team
           </h2>
-          <p className="text-xl text-white/60 max-w-2xl mx-auto">
-            Kompetent, geduldig und immer gut drauf – wir begleiten dich auf deinem Weg! 🚗
-          </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
           {team.map((member, i) => (
             <motion.div
               key={i}
               className="group"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 50, rotateY: -20 }}
+              whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
+              transition={{ delay: i * 0.1, type: 'spring' }}
             >
               <motion.div
-                className="relative p-5 rounded-3xl bg-gradient-to-b from-white/10 to-white/5 border border-white/10 overflow-hidden"
-                whileHover={{ y: -10, scale: 1.02 }}
+                className="relative p-6 rounded-[2rem] bg-gradient-to-b from-white/10 to-white/[0.02] border border-white/10 overflow-hidden"
+                whileHover={{ y: -15, scale: 1.05, rotateY: 10 }}
                 transition={{ type: 'spring' }}
+                style={{ transformStyle: 'preserve-3d' }}
               >
-                {/* Emoji Badge */}
                 <motion.div
-                  className="absolute top-3 right-3 w-10 h-10 rounded-full bg-[#FF6B35]/20 flex items-center justify-center text-xl z-10"
-                  whileHover={{ scale: 1.2, rotate: 20 }}
+                  className="absolute top-4 right-4 w-12 h-12 rounded-full bg-[#FF6B35]/20 flex items-center justify-center text-2xl z-10"
+                  whileHover={{ scale: 1.3, rotate: 30 }}
                 >
                   {member.emoji}
                 </motion.div>
 
-                {/* Image */}
-                <div className="relative w-full aspect-square rounded-2xl overflow-hidden mb-5 bg-gradient-to-br from-[#FF6B35]/20 to-purple-500/20">
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                <div className="relative w-full aspect-square rounded-2xl overflow-hidden mb-6 bg-gradient-to-br from-[#FF6B35]/20 to-purple-500/20">
+                  <Image src={member.image} alt={member.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
 
-                <h3 className="font-bold text-white text-xl mb-1">{member.name}</h3>
-                <p className="text-[#FF6B35] text-sm font-medium mb-4">{member.role}</p>
+                <h3 className="font-black text-white text-2xl mb-2">{member.name}</h3>
+                <p className="text-[#FF6B35] font-semibold mb-4">{member.role}</p>
                 
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 rounded-full bg-white/5 text-xs text-white/60">
-                    📋 {member.klassen}
-                  </span>
-                  <span className="px-3 py-1 rounded-full bg-white/5 text-xs text-white/60">
-                    🗣️ {member.sprachen}
-                  </span>
+                  <span className="px-3 py-1.5 rounded-full bg-white/5 text-xs text-white/60">📋 {member.klassen}</span>
+                  <span className="px-3 py-1.5 rounded-full bg-white/5 text-xs text-white/60">🗣️ {member.sprachen}</span>
                 </div>
-
-                {/* Hover glow */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl bg-gradient-to-t from-[#FF6B35]/10 to-transparent" />
               </motion.div>
             </motion.div>
           ))}
@@ -723,66 +919,36 @@ function TeamSection() {
 
 function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
-
   const faqs = [
     { q: 'Was ist an eurer Fahrschule besonders?', a: 'Wir sind Spezialisten für die Intensivausbildung! Bei uns kannst du innerhalb von 10 Tagen zu deinem Führerschein kommen – und das easy!' },
-    { q: 'Wie schnell kann ich meinen Führerschein machen?', a: 'Mit unserem Express-Kurs in nur 10 Tagen! Im Intensivkurs 4-6 Wochen, klassisch 3-6 Monate – du entscheidest!' },
+    { q: 'Wie schnell kann ich meinen Führerschein machen?', a: 'Mit unserem Express-Kurs in nur 10 Tagen! Im Intensivkurs 4-6 Wochen, klassisch 3-6 Monate.' },
     { q: 'Kann ich meine Musik während der Fahrstunden hören?', a: 'Klar! Deine Lieblingsmusik kann dir helfen, entspannt zu sein. Sprich einfach deinen Fahrlehrer an!' },
     { q: 'Welche Sprachen sprecht ihr?', a: 'Deutsch, Englisch, Kurdisch und Afghanisch – wir helfen dir in deiner Sprache!' },
-    { q: 'Habt ihr eine App?', a: 'Ja! Mit der drive.buzz App lernst du flexibel für die Theorieprüfung und hast alle Termine im Blick.' },
   ];
 
   return (
-    <section id="faq" className="py-32">
+    <section id="faq" className="py-40">
       <div className="container mx-auto px-4">
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <span className="inline-block px-5 py-2 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-semibold mb-6">
-            ❓ Häufige Fragen
-          </span>
-          <h2 className="text-4xl sm:text-5xl font-black text-white">
-            Noch <span className="text-[#FF6B35]">Fragen?</span>
-          </h2>
+        <motion.div className="text-center mb-20" initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          <span className="inline-block px-6 py-3 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-bold mb-8">❓ Häufige Fragen</span>
+          <h2 className="text-5xl font-black text-white">Noch <span className="text-[#FF6B35]">Fragen?</span></h2>
         </motion.div>
 
-        <div className="max-w-3xl mx-auto space-y-4">
+        <div className="max-w-4xl mx-auto space-y-6">
           {faqs.map((faq, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-            >
+            <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
               <motion.button
-                className={`w-full p-6 rounded-2xl text-left transition-all ${
-                  openIndex === i
-                    ? 'bg-gradient-to-r from-[#FF6B35]/20 to-transparent border-[#FF6B35]/30'
-                    : 'bg-white/5 border-white/10 hover:bg-white/10'
-                } border`}
+                className={`w-full p-8 rounded-3xl text-left transition-all ${openIndex === i ? 'bg-gradient-to-r from-[#FF6B35]/20 to-transparent border-[#FF6B35]/40' : 'bg-white/5 border-white/10 hover:bg-white/10'} border`}
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                whileHover={{ scale: 1.02 }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-white text-lg pr-4">{faq.q}</span>
-                  <motion.span
-                    animate={{ rotate: openIndex === i ? 45 : 0 }}
-                    className="text-[#FF6B35] text-2xl flex-shrink-0"
-                  >
-                    +
-                  </motion.span>
+                  <span className="font-black text-white text-xl pr-4">{faq.q}</span>
+                  <motion.span animate={{ rotate: openIndex === i ? 45 : 0 }} className="text-[#FF6B35] text-3xl flex-shrink-0">+</motion.span>
                 </div>
                 <AnimatePresence>
                   {openIndex === i && (
-                    <motion.p
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="text-white/60 mt-4 overflow-hidden"
-                    >
+                    <motion.p initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="text-white/60 mt-6 text-lg overflow-hidden">
                       {faq.a}
                     </motion.p>
                   )}
@@ -802,70 +968,31 @@ function FAQSection() {
 
 function KontaktSection() {
   return (
-    <section id="kontakt" className="py-32 relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-[#FF6B35]/10 rounded-full blur-[150px] -translate-x-1/2" />
-        <div className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-[120px] translate-x-1/2" />
-      </div>
-
+    <section id="kontakt" className="py-40 relative">
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-16">
-          {/* Left - Form */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-          >
-            <span className="inline-block px-5 py-2 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-semibold mb-6">
-              ✉️ Schreib uns!
-            </span>
-            <h2 className="text-4xl font-black text-white mb-4">
-              Wir sind <span className="text-[#FF6B35]">für dich da!</span>
-            </h2>
-            <p className="text-white/60 mb-10 text-lg">
-              Du möchtest mehr über unsere Kurse erfahren? Schick uns eine Nachricht!
-            </p>
+        <div className="grid lg:grid-cols-2 gap-20">
+          <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+            <span className="inline-block px-6 py-3 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] text-sm font-bold mb-8">✉️ Schreib uns!</span>
+            <h2 className="text-5xl font-black text-white mb-6">Wir sind <span className="text-[#FF6B35]">für dich da!</span></h2>
+            <p className="text-white/60 mb-12 text-xl">Schick uns eine Nachricht – wir melden uns schnellstmöglich!</p>
 
-            <form className="space-y-5">
-              <div className="grid sm:grid-cols-2 gap-5">
-                <motion.input
-                  type="text"
-                  placeholder="Dein Name"
-                  className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#FF6B35]/50 transition-colors"
-                  whileFocus={{ scale: 1.02 }}
-                />
-                <motion.input
-                  type="email"
-                  placeholder="Deine E-Mail"
-                  className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#FF6B35]/50 transition-colors"
-                  whileFocus={{ scale: 1.02 }}
-                />
+            <form className="space-y-6">
+              <div className="grid sm:grid-cols-2 gap-6">
+                <motion.input type="text" placeholder="Dein Name" className="w-full px-6 py-5 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#FF6B35]/50 text-lg" whileFocus={{ scale: 1.02, borderColor: '#FF6B35' }} />
+                <motion.input type="email" placeholder="Deine E-Mail" className="w-full px-6 py-5 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#FF6B35]/50 text-lg" whileFocus={{ scale: 1.02 }} />
               </div>
-              <motion.input
-                type="tel"
-                placeholder="Deine Telefonnummer"
-                className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#FF6B35]/50 transition-colors"
-                whileFocus={{ scale: 1.02 }}
-              />
-              <motion.select
-                className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white/70 focus:outline-none focus:border-[#FF6B35]/50 transition-colors"
-                whileFocus={{ scale: 1.02 }}
-              >
+              <motion.input type="tel" placeholder="Deine Telefonnummer" className="w-full px-6 py-5 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#FF6B35]/50 text-lg" whileFocus={{ scale: 1.02 }} />
+              <motion.select className="w-full px-6 py-5 rounded-2xl bg-white/5 border border-white/10 text-white/70 focus:outline-none focus:border-[#FF6B35]/50 text-lg" whileFocus={{ scale: 1.02 }}>
                 <option value="">Kurs wählen...</option>
                 <option value="klassisch">📚 Klassisch (3-6 Monate)</option>
                 <option value="intensiv">🚀 Intensiv (4-6 Wochen)</option>
                 <option value="express">⚡ Express (10 Tage)</option>
               </motion.select>
-              <motion.textarea
-                placeholder="Deine Nachricht"
-                rows={4}
-                className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#FF6B35]/50 transition-colors resize-none"
-                whileFocus={{ scale: 1.02 }}
-              />
+              <motion.textarea placeholder="Deine Nachricht" rows={4} className="w-full px-6 py-5 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#FF6B35]/50 text-lg resize-none" whileFocus={{ scale: 1.02 }} />
               <motion.button
                 type="submit"
-                className="w-full py-5 bg-gradient-to-r from-[#FF6B35] to-[#E55A25] rounded-2xl font-bold text-white text-lg shadow-2xl shadow-[#FF6B35]/30 hover:shadow-[#FF6B35]/50 transition-shadow"
-                whileHover={{ scale: 1.02 }}
+                className="w-full py-6 bg-gradient-to-r from-[#FF6B35] to-[#E55A25] rounded-2xl font-black text-white text-xl shadow-2xl shadow-[#FF6B35]/40"
+                whileHover={{ scale: 1.02, boxShadow: '0 30px 60px -15px rgba(255,107,53,0.5)' }}
                 whileTap={{ scale: 0.98 }}
               >
                 Nachricht senden 🚀
@@ -873,88 +1000,28 @@ function KontaktSection() {
             </form>
           </motion.div>
 
-          {/* Right - Info Cards */}
-          <motion.div
-            className="space-y-6"
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-          >
-            {/* Standorte */}
+          <motion.div className="space-y-8" initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
             {[
               { name: 'Bremer Platz', address: 'Bremer Platz 5, 48155 Münster', hint: '🚂 4 Min vom Hbf' },
-              { name: 'Metzer Straße', address: 'Metzer Str. 73, 48151 Münster', hint: '🚌 8 Min von Haltestelle Inselbogen' },
-            ].map((standort, i) => (
-              <motion.div
-                key={i}
-                className="p-6 rounded-3xl bg-white/5 border border-white/10 hover:border-[#FF6B35]/30 transition-colors"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-              >
-                <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
-                  <span>📍</span>
-                  {standort.name}
-                </h3>
-                <p className="text-white/60 mb-2">{standort.address}</p>
-                <p className="text-[#FF6B35] text-sm">{standort.hint}</p>
+              { name: 'Metzer Straße', address: 'Metzer Str. 73, 48151 Münster', hint: '🚌 8 Min von Haltestelle' },
+            ].map((s, i) => (
+              <motion.div key={i} className="p-8 rounded-3xl bg-white/5 border border-white/10" whileHover={{ scale: 1.02, borderColor: 'rgba(255,107,53,0.3)' }}>
+                <h3 className="font-black text-white text-xl mb-3 flex items-center gap-3"><span>📍</span>{s.name}</h3>
+                <p className="text-white/60 mb-2">{s.address}</p>
+                <p className="text-[#FF6B35]">{s.hint}</p>
               </motion.div>
             ))}
-
-            {/* Öffnungszeiten */}
-            <motion.div
-              className="p-6 rounded-3xl bg-white/5 border border-white/10"
-              whileHover={{ scale: 1.02 }}
-            >
-              <h3 className="font-bold text-white text-lg mb-4 flex items-center gap-2">
-                <span>🕐</span>
-                Öffnungszeiten
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-white/60">Mo - Do</span>
-                  <span className="text-white font-medium">14:30 - 19:00 Uhr</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/60">Fr - So</span>
-                  <span className="text-white/40">geschlossen</span>
-                </div>
-              </div>
+            <motion.div className="p-8 rounded-3xl bg-white/5 border border-white/10" whileHover={{ scale: 1.02 }}>
+              <h3 className="font-black text-white text-xl mb-4">🕐 Öffnungszeiten</h3>
+              <div className="flex justify-between"><span className="text-white/60">Mo - Do</span><span className="text-white font-bold">14:30 - 19:00</span></div>
+              <div className="flex justify-between mt-2"><span className="text-white/60">Fr - So</span><span className="text-white/40">geschlossen</span></div>
             </motion.div>
-
-            {/* Contact */}
-            <motion.div
-              className="p-6 rounded-3xl bg-gradient-to-br from-[#FF6B35]/20 to-transparent border border-[#FF6B35]/30"
-              whileHover={{ scale: 1.02 }}
-            >
-              <h3 className="font-bold text-white text-lg mb-4">Direkter Kontakt</h3>
+            <motion.div className="p-8 rounded-3xl bg-gradient-to-br from-[#FF6B35]/20 to-transparent border border-[#FF6B35]/30" whileHover={{ scale: 1.02 }}>
+              <h3 className="font-black text-white text-xl mb-6">Direkter Kontakt</h3>
               <div className="space-y-4">
-                <motion.a
-                  href="tel:+4917682081601"
-                  className="flex items-center gap-3 text-white/80 hover:text-[#FF6B35] transition-colors"
-                  whileHover={{ x: 5 }}
-                >
-                  <span className="text-xl">📞</span>
-                  <span>0176 - 820 816 01</span>
-                </motion.a>
-                <motion.a
-                  href="mailto:info@fahrwerk-muenster.de"
-                  className="flex items-center gap-3 text-white/80 hover:text-[#FF6B35] transition-colors"
-                  whileHover={{ x: 5 }}
-                >
-                  <span className="text-xl">✉️</span>
-                  <span>info@fahrwerk-muenster.de</span>
-                </motion.a>
-                <motion.a
-                  href="https://wa.me/4917682081601"
-                  className="flex items-center gap-3 text-white/80 hover:text-[#25D366] transition-colors"
-                  whileHover={{ x: 5 }}
-                >
-                  <span className="text-xl">💬</span>
-                  <span>WhatsApp</span>
-                </motion.a>
+                <motion.a href="tel:+4917682081601" className="flex items-center gap-4 text-white/80 hover:text-[#FF6B35] text-lg" whileHover={{ x: 10 }}><span className="text-2xl">📞</span>0176 - 820 816 01</motion.a>
+                <motion.a href="mailto:info@fahrwerk-muenster.de" className="flex items-center gap-4 text-white/80 hover:text-[#FF6B35] text-lg" whileHover={{ x: 10 }}><span className="text-2xl">✉️</span>info@fahrwerk-muenster.de</motion.a>
+                <motion.a href="https://wa.me/4917682081601" className="flex items-center gap-4 text-white/80 hover:text-[#25D366] text-lg" whileHover={{ x: 10 }}><span className="text-2xl">💬</span>WhatsApp</motion.a>
               </div>
             </motion.div>
           </motion.div>
@@ -970,42 +1037,19 @@ function KontaktSection() {
 
 function Footer() {
   return (
-    <footer className="py-16 border-t border-white/10 relative">
+    <footer className="py-20 border-t border-white/10">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-          <motion.div
-            className="flex items-center gap-3"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#E55A25] flex items-center justify-center font-bold text-white">
-              FW
-            </div>
+        <div className="flex flex-col md:flex-row justify-between items-center gap-10">
+          <motion.div className="flex items-center gap-4" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
+            <motion.div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#E55A25] flex items-center justify-center font-black text-white" whileHover={{ rotate: 10, scale: 1.1 }}>FW</motion.div>
             <span className="text-white/60">© 2025 Fahrwerk Münster GmbH</span>
           </motion.div>
-
-          <div className="flex items-center gap-6">
-            {[
-              { name: 'Instagram', url: 'https://instagram.com/fahrwerkms' },
-              { name: 'Facebook', url: 'https://facebook.com/FahrwerkMS' },
-            ].map((social) => (
-              <motion.a
-                key={social.name}
-                href={social.url}
-                target="_blank"
-                className="text-white/40 hover:text-[#FF6B35] transition-colors"
-                whileHover={{ scale: 1.1 }}
-              >
-                {social.name}
-              </motion.a>
+          <div className="flex items-center gap-8">
+            {['Instagram', 'Facebook'].map((s) => (
+              <motion.a key={s} href="#" className="text-white/40 hover:text-[#FF6B35]" whileHover={{ scale: 1.1, y: -3 }}>{s}</motion.a>
             ))}
-            <Link href="/impressum" className="text-white/40 hover:text-white transition-colors">
-              Impressum
-            </Link>
-            <Link href="/datenschutz" className="text-white/40 hover:text-white transition-colors">
-              Datenschutz
-            </Link>
+            <Link href="/impressum" className="text-white/40 hover:text-white">Impressum</Link>
+            <Link href="/datenschutz" className="text-white/40 hover:text-white">Datenschutz</Link>
           </div>
         </div>
       </div>
@@ -1020,6 +1064,9 @@ function Footer() {
 export default function Home() {
   return (
     <main className="overflow-x-hidden">
+      <CrazyBackground />
+      <Floating3DShapes />
+      <AnimatedParticles />
       <Navigation />
       <HeroSection />
       <KurseSection />
